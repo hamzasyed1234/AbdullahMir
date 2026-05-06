@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
+import AdminBar from './components/AdminBar'
 import Home from './pages/Home'
 import MeetMir from './pages/MeetMir'
 import Priorities from './pages/Priorities'
@@ -13,6 +14,7 @@ export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <AdminBar />
         <Navbar />
         <Routes>
           <Route path="/" element={<Home />} />
