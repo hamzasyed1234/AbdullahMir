@@ -1,56 +1,179 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
-import EditableText from '../components/EditableText'
+import { useAuth } from '../context/AuthContext'
+import { Plus, Pencil, Trash2, Check, X } from 'lucide-react'
 
-export default function Priorities() {
-  const [content, setContent] = useState({ body: 'Loading…' })
+function PriorityForm({ initial = {}, onSave, onCancel }) {
+  const [icon, setIcon] = useState(initial.icon || '⭐')
+  const [title, setTitle] = useState(initial.title || '')
+  const [body, setBody] = useState(initial.body || '')
+  const [saving, setSaving] = useState(false)
 
-  useEffect(() => {
-    supabase.from('page_content').select('*').eq('page', 'priorities').then(({ data }) => {
-      if (data) {
-        const map = {}
-        data.forEach(r => { map[r.key] = r.value })
-        setContent(prev => ({ ...prev, ...map }))
-      }
-    })
-  }, [])
-
-  const priorities = [
-    { icon: '🏠', title: 'Affordable Housing', body: content.housing || 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor.' },
-    { icon: '🌱', title: 'Environment & Greenbelt', body: content.environment || 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque habitant morbi tristique.' },
-    { icon: '🏗️', title: 'Responsible Growth', body: content.growth || 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam vehicula sapien et urna tincidunt.' },
-    { icon: '🤝', title: 'Community Safety', body: content.safety || 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lacinia odio vitae vestibulum.' },
-    { icon: '📚', title: 'Libraries & Recreation', body: content.libraries || 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras mattis consectetur purus sit amet.' },
-    { icon: '💼', title: 'Local Economy', body: content.economy || 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sed odio dui consequat pretium.' },
-  ]
+  const handleSave = async () => {
+    if (!title || !body) return
+    setSaving(true)
+    await onSave({ icon, title, body })
+    setSaving(false)
+  }
 
   return (
-    <div className="pt-20 min-h-screen bg-cream">
+    <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-6">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
+        <h3 className="font-serif text-[#0D4F4F] text-2xl font-bold mb-6">
+          {initial.id ? 'Edit Priority' : 'New Priority'}
+        </h3>
+        <div className="flex flex-col gap-4">
+          <div>
+            <label className="text-xs font-sans text-gray-500 mb-1 block">Emoji Icon</label>
+            <input
+              type="text"
+              placeholder="e.g. 🏠"
+              value={icon}
+              onChange={e => setIcon(e.target.value)}
+              className="border border-gray-200 rounded-xl px-4 py-3 font-sans focus:outline-none focus:border-[#0D4F4F] w-full text-2xl"
+            />
+          </div>
+          <input
+            type="text"
+            placeholder="Title (e.g. Affordable Housing)"
+            value={title}
+            onChange={e => setTitle(e.target.value)}
+            className="border border-gray-200 rounded-xl px-4 py-3 font-sans focus:outline-none focus:border-[#0D4F4F]"
+          />
+          <textarea
+            placeholder="Description…"
+            value={body}
+            onChange={e => setBody(e.target.value)}
+            rows={4}
+            className="border border-gray-200 rounded-xl px-4 py-3 font-sans focus:outline-none focus:border-[#0D4F4F] resize-none"
+          />
+          <div className="flex gap-3 justify-end mt-2">
+            <button
+              onClick={onCancel}
+              className="border border-gray-200 px-5 py-2 rounded-xl font-sans text-sm flex items-center gap-1 hover:bg-gray-50"
+            >
+              <X size={14} /> Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="bg-[#0D4F4F] text-white px-5 py-2 rounded-xl font-sans text-sm flex items-center gap-1 hover:bg-[#1a6b6b] transition disabled:opacity-50"
+            >
+              <Check size={14} /> {saving ? 'Saving…' : 'Save'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function Priorities() {
+  const { user } = useAuth()
+  const [priorities, setPriorities] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showForm, setShowForm] = useState(false)
+  const [editingItem, setEditingItem] = useState(null)
+
+  useEffect(() => {
+    fetchPriorities()
+  }, [])
+
+  const fetchPriorities = async () => {
+    const { data } = await supabase
+      .from('priorities')
+      .select('*')
+      .order('sort_order')
+    setPriorities(data || [])
+    setLoading(false)
+  }
+
+  const handleSave = async (fields) => {
+    if (editingItem) {
+      await supabase.from('priorities').update(fields).eq('id', editingItem.id)
+    } else {
+      await supabase.from('priorities').insert([{ ...fields, sort_order: priorities.length }])
+    }
+    setShowForm(false)
+    setEditingItem(null)
+    fetchPriorities()
+  }
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Delete this priority?')) return
+    await supabase.from('priorities').delete().eq('id', id)
+    fetchPriorities()
+  }
+
+  return (
+    <div className="pt-20 min-h-screen bg-[#FAF7F2]">
+
+      {/* Header */}
       <div className="bg-[#0D4F4F] py-16 px-6 text-center">
-        <span className="text-cream/50 text-xs uppercase tracking-widest font-sans">What Matters</span>
-        <h1 className="font-serif text-cream text-5xl font-bold mt-2">Priorities</h1>
+        <span className="text-[#FAF7F2]/50 text-xs uppercase tracking-widest font-sans">What Matters</span>
+        <h1 className="font-serif text-[#FAF7F2] text-5xl font-bold mt-2">Priorities</h1>
       </div>
 
       <div className="max-w-5xl mx-auto px-6 py-16">
-        {/* Intro — editable */}
-        <div className="text-center mb-16">
-          <p className="font-sans text-[#0D4F4F]/70 text-lg leading-relaxed max-w-2xl mx-auto">
-            <EditableText page="priorities" contentKey="body" value={content.body}
-              onUpdate={v => setContent(c => ({ ...c, body: v }))} multiline />
-          </p>
-        </div>
+
+        {/* Add button for admin */}
+        {user && (
+          <div className="flex justify-end mb-8">
+            <button
+              onClick={() => { setEditingItem(null); setShowForm(true) }}
+              className="flex items-center gap-2 bg-[#0D4F4F] text-white px-5 py-2.5 rounded-xl font-sans text-sm hover:bg-[#1a6b6b] transition"
+            >
+              <Plus size={16} /> Add Priority
+            </button>
+          </div>
+        )}
 
         {/* Priority cards */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {priorities.map((p, i) => (
-            <div key={i} className="bg-white rounded-2xl p-8 shadow-sm border border-[#0D4F4F]/10 hover:shadow-md transition">
-              <div className="text-3xl mb-4">{p.icon}</div>
-              <h3 className="font-serif text-[#0D4F4F] text-xl font-bold mb-3">{p.title}</h3>
-              <p className="font-sans text-[#0D4F4F]/70 text-sm leading-relaxed">{p.body}</p>
-            </div>
-          ))}
-        </div>
+        {loading ? (
+          <p className="text-center text-[#0D4F4F]/40 font-sans">Loading…</p>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {priorities.map((p) => (
+              <div
+                key={p.id}
+                className="bg-white rounded-2xl p-8 shadow-sm border border-[#0D4F4F]/10 hover:shadow-md transition flex flex-col"
+              >
+                <div className="text-3xl mb-4">{p.icon}</div>
+                <h3 className="font-serif text-[#0D4F4F] text-xl font-bold mb-3">{p.title}</h3>
+                <p className="font-sans text-[#0D4F4F]/70 text-sm leading-relaxed flex-1">{p.body}</p>
+
+                {/* Admin buttons */}
+                {user && (
+                  <div className="flex gap-2 mt-5 pt-4 border-t border-[#0D4F4F]/10">
+                    <button
+                      onClick={() => { setEditingItem(p); setShowForm(true) }}
+                      className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg border border-[#0D4F4F]/20 text-[#0D4F4F] font-sans hover:bg-[#0D4F4F]/5 transition"
+                    >
+                      <Pencil size={11} /> Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(p.id)}
+                      className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg border border-red-200 text-red-400 font-sans hover:bg-red-50 transition"
+                    >
+                      <Trash2 size={11} /> Delete
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
+
+      {/* Modal */}
+      {showForm && (
+        <PriorityForm
+          initial={editingItem || {}}
+          onSave={handleSave}
+          onCancel={() => { setShowForm(false); setEditingItem(null) }}
+        />
+      )}
+
     </div>
   )
 }
