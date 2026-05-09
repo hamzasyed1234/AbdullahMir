@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
 import EditableText from '../components/EditableText'
 import { useAuth } from '../context/AuthContext'
-import { Pencil } from 'lucide-react'
+import { Pencil, Plus, Trash2, Check, X } from 'lucide-react'
 
 const DEFAULT_INTRO = `My name is Abdullah Mir, and I am running to be your City Councillor for Ward 1. I'm a community builder and a dedicated advocate for residents.
 
@@ -16,18 +16,84 @@ I want to hear from you: votemirward1@gmail.com or 289-992-3647.
 
 We can build a stronger city together. I'm here to work for you!`
 
-const community = [
-  { role: 'Co-Chair', org: 'Stop Sprawl Durham (SSD)', period: 'December 2022 – Present' },
-  { role: 'Vice President', org: 'Rougemount Community and Recreation Association (RCRA)', period: 'October 2023 – Present' },
-  { role: 'Board Member', org: 'Pickering Public Library', period: 'December 2022 – Present' },
-  { role: 'Board Member', org: 'Land Over Landings', period: 'December 2023 – Present' },
-]
+function CommunityForm({ initial = {}, onSave, onCancel }) {
+  const [role, setRole] = useState(initial.role || '')
+  const [org, setOrg] = useState(initial.org || '')
+  const [periodStart, setPeriodStart] = useState(initial.period_start || '')
+  const [periodEnd, setPeriodEnd] = useState(initial.period_end || 'Present')
+  const [saving, setSaving] = useState(false)
+
+  const handleSave = async () => {
+    if (!role || !org || !periodStart) return
+    setSaving(true)
+    await onSave({ role, org, period_start: periodStart, period_end: periodEnd })
+    setSaving(false)
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-6">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
+        <h3 className="font-serif text-[#0D4F4F] text-2xl font-bold mb-6">
+          {initial.id ? 'Edit Involvement' : 'Add Involvement'}
+        </h3>
+        <div className="flex flex-col gap-4">
+          <input
+            type="text"
+            placeholder="Role (e.g. Co-Chair)"
+            value={role}
+            onChange={e => setRole(e.target.value)}
+            className="border border-gray-200 rounded-xl px-4 py-3 font-sans focus:outline-none focus:border-[#0D4F4F]"
+          />
+          <input
+            type="text"
+            placeholder="Organization"
+            value={org}
+            onChange={e => setOrg(e.target.value)}
+            className="border border-gray-200 rounded-xl px-4 py-3 font-sans focus:outline-none focus:border-[#0D4F4F]"
+          />
+          <input
+            type="text"
+            placeholder="Start (e.g. December 2022)"
+            value={periodStart}
+            onChange={e => setPeriodStart(e.target.value)}
+            className="border border-gray-200 rounded-xl px-4 py-3 font-sans focus:outline-none focus:border-[#0D4F4F]"
+          />
+          <input
+            type="text"
+            placeholder="End (e.g. Present or June 2024)"
+            value={periodEnd}
+            onChange={e => setPeriodEnd(e.target.value)}
+            className="border border-gray-200 rounded-xl px-4 py-3 font-sans focus:outline-none focus:border-[#0D4F4F]"
+          />
+          <div className="flex gap-3 justify-end mt-2">
+            <button
+              onClick={onCancel}
+              className="border border-gray-200 px-5 py-2 rounded-xl font-sans text-sm flex items-center gap-1 hover:bg-gray-50"
+            >
+              <X size={14} /> Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="bg-[#0D4F4F] text-white px-5 py-2 rounded-xl font-sans text-sm flex items-center gap-1 hover:bg-[#1a6b6b] transition disabled:opacity-50"
+            >
+              <Check size={14} /> {saving ? 'Saving…' : 'Save'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export default function MeetMir() {
   const { user } = useAuth()
   const [content, setContent] = useState({ about_intro: DEFAULT_INTRO })
   const [photo, setPhoto] = useState('/DSCF4950.jpg')
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
+  const [community, setCommunity] = useState([])
+  const [showForm, setShowForm] = useState(false)
+  const [editingItem, setEditingItem] = useState(null)
 
   useEffect(() => {
     supabase.from('page_content').select('*').eq('page', 'meet').then(({ data }) => {
@@ -38,7 +104,16 @@ export default function MeetMir() {
         if (map.photo_url) setPhoto(map.photo_url)
       }
     })
+    fetchCommunity()
   }, [])
+
+  const fetchCommunity = async () => {
+    const { data } = await supabase
+      .from('community_involvement')
+      .select('*')
+      .order('sort_order')
+    setCommunity(data || [])
+  }
 
   const handlePhotoUpload = async (e) => {
     const file = e.target.files[0]
@@ -58,13 +133,30 @@ export default function MeetMir() {
     setUploadingPhoto(false)
   }
 
+  const handleSave = async (fields) => {
+    if (editingItem) {
+      await supabase.from('community_involvement').update(fields).eq('id', editingItem.id)
+    } else {
+      await supabase.from('community_involvement').insert([{ ...fields, sort_order: community.length }])
+    }
+    setShowForm(false)
+    setEditingItem(null)
+    fetchCommunity()
+  }
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Delete this item?')) return
+    await supabase.from('community_involvement').delete().eq('id', id)
+    fetchCommunity()
+  }
+
   return (
     <div className="min-h-screen bg-[#FAF7F2]" style={{ paddingTop: '64px' }}>
 
       {/* Main content — photo left, text right */}
       <div className="max-w-6xl mx-auto px-6 py-16 flex flex-col md:flex-row gap-12 items-start">
 
-        {/* LEFT — Photo, fixed width, natural height */}
+        {/* LEFT — Photo */}
         <div className="relative flex-shrink-0 w-full md:w-96">
           <img
             src={photo}
@@ -80,7 +172,7 @@ export default function MeetMir() {
           )}
         </div>
 
-        {/* RIGHT — All text flows naturally */}
+        {/* RIGHT — Text */}
         <div className="flex-1">
           <span className="text-[#0D4F4F]/40 text-xs uppercase tracking-widest font-sans">Get to Know</span>
           <h1 className="font-serif text-[#0D4F4F] text-5xl font-bold mt-2 mb-6">Meet Mir</h1>
@@ -101,20 +193,58 @@ export default function MeetMir() {
       {/* Community involvement */}
       <div className="bg-[#0D4F4F] py-16 px-6">
         <div className="max-w-4xl mx-auto">
-          <h2 className="font-serif text-[#FAF7F2] text-3xl font-bold mb-10 text-center">
-            Community Involvement
-          </h2>
+          <div className="flex items-center justify-between mb-10">
+            <h2 className="font-serif text-[#FAF7F2] text-3xl font-bold">
+              Community Involvement
+            </h2>
+            {user && (
+              <button
+                onClick={() => { setEditingItem(null); setShowForm(true) }}
+                className="flex items-center gap-2 bg-[#FAF7F2] text-[#0D4F4F] px-4 py-2 rounded-xl font-sans text-sm font-semibold hover:bg-[#FAF7F2]/90 transition"
+              >
+                <Plus size={15} /> Add
+              </button>
+            )}
+          </div>
+
           <div className="grid md:grid-cols-2 gap-4">
-            {community.map((item, i) => (
-              <div key={i} className="bg-[#FAF7F2]/10 rounded-2xl p-6 border border-[#FAF7F2]/10">
-                <p className="text-[#FAF7F2]/50 font-sans text-xs uppercase tracking-widest mb-1">{item.period}</p>
+            {community.map((item) => (
+              <div key={item.id} className="bg-[#FAF7F2]/10 rounded-2xl p-6 border border-[#FAF7F2]/10 relative group">
+                <p className="text-[#FAF7F2]/50 font-sans text-xs uppercase tracking-widest mb-1">
+                  {item.period_start} – {item.period_end}
+                </p>
                 <p className="text-[#FAF7F2] font-serif text-lg font-semibold">{item.role}</p>
                 <p className="text-[#FAF7F2]/80 font-sans text-sm mt-1">{item.org}</p>
+                {user && (
+                  <div className="flex gap-2 mt-4">
+                    <button
+                      onClick={() => { setEditingItem(item); setShowForm(true) }}
+                      className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg border border-[#FAF7F2]/30 text-[#FAF7F2] font-sans hover:bg-[#FAF7F2]/10 transition"
+                    >
+                      <Pencil size={11} /> Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(item.id)}
+                      className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg border border-red-400/40 text-red-300 font-sans hover:bg-red-400/10 transition"
+                    >
+                      <Trash2 size={11} /> Delete
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
         </div>
       </div>
+
+      {/* Add/Edit modal */}
+      {showForm && (
+        <CommunityForm
+          initial={editingItem || {}}
+          onSave={handleSave}
+          onCancel={() => { setShowForm(false); setEditingItem(null) }}
+        />
+      )}
 
     </div>
   )
