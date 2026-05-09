@@ -10,7 +10,7 @@ function ArticleForm({ initial = {}, onSave, onCancel }) {
   const [title, setTitle] = useState(initial.title || '')
   const [body, setBody] = useState(initial.body || '')
   const [imageFile, setImageFile] = useState(null)
-  const [imageUrl, setImageUrl] = useState(initial.image_url || '')
+  const [imageUrl] = useState(initial.image_url || '')
   const [saving, setSaving] = useState(false)
 
   const handleSave = async () => {

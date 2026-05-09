@@ -1,58 +1,144 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
 import { useAuth } from '../context/AuthContext'
-import { Plus, Pencil, Trash2, Check, X, ExternalLink } from 'lucide-react'
+import { Plus, Pencil, Trash2, Check, X, ExternalLink, Link, Loader } from 'lucide-react'
 
 const TEAL = '#0D4F4F'
 const CREAM = '#FAF7F2'
 
-function PressForm({ initial = {}, onSave, onCancel }) {
-  const [title, setTitle] = useState(initial.title || '')
-  const [source, setSource] = useState(initial.source || '')
-  const [url, setUrl] = useState(initial.url || '')
-  const [body, setBody] = useState(initial.body || '')
-  const [imageFile, setImageFile] = useState(null)
-  const [imageUrl, setImageUrl] = useState(initial.image_url || '')
-  const [saving, setSaving] = useState(false)
-
-  const handleSave = async () => {
-    setSaving(true)
-    let finalUrl = imageUrl
-    if (imageFile) {
-      const fileName = `press-${Date.now()}.${imageFile.name.split('.').pop()}`
-      const { error } = await supabase.storage.from('images').upload(fileName, imageFile, { upsert: true })
-      if (!error) {
-        const { data } = supabase.storage.from('images').getPublicUrl(fileName)
-        finalUrl = data.publicUrl
+// Fetch link preview metadata using a free API
+async function fetchLinkPreview(url) {
+  try {
+    const res = await fetch(
+      `https://api.microlink.io/?url=${encodeURIComponent(url)}&screenshot=true&meta=true`
+    )
+    const data = await res.json()
+    if (data.status === 'success') {
+      return {
+        title: data.data.title || '',
+        description: data.data.description || '',
+        image: data.data.image?.url || data.data.screenshot?.url || '',
+        publisher: data.data.publisher || new URL(url).hostname.replace('www.', ''),
       }
     }
-    await onSave({ title, source, url, body, image_url: finalUrl })
+  } catch (e) {}
+  return null
+}
+
+function PressForm({ initial = {}, onSave, onCancel }) {
+  const [url, setUrl] = useState(initial.url || '')
+  const [title, setTitle] = useState(initial.title || '')
+  const [source, setSource] = useState(initial.source || '')
+  const [body, setBody] = useState(initial.body || '')
+  const [previewImage, setPreviewImage] = useState(initial.preview_image || '')
+  const [fetching, setFetching] = useState(false)
+  const [fetched, setFetched] = useState(!!initial.title)
+  const [saving, setSaving] = useState(false)
+
+  const handleFetch = async () => {
+    if (!url) return
+    setFetching(true)
+    const preview = await fetchLinkPreview(url)
+    if (preview) {
+      setTitle(preview.title)
+      setSource(preview.publisher)
+      setBody(preview.description)
+      setPreviewImage(preview.image)
+      setFetched(true)
+    }
+    setFetching(false)
+  }
+
+  const handleSave = async () => {
+    if (!url || !title) return
+    setSaving(true)
+    await onSave({
+      url,
+      title,
+      source,
+      body,
+      preview_image: previewImage,
+      image_url: previewImage,
+    })
     setSaving(false)
   }
 
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-6">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-8">
-        <h3 className="font-serif text-[#0D4F4F] text-2xl font-bold mb-6">{initial.id ? 'Edit Press Item' : 'New Press Item'}</h3>
+        <h3 className="font-serif text-[#0D4F4F] text-2xl font-bold mb-6">
+          {initial.id ? 'Edit Press Item' : 'Add Press Item'}
+        </h3>
         <div className="flex flex-col gap-4">
-          <input type="text" placeholder="Headline / Title" value={title} onChange={e => setTitle(e.target.value)}
-            className="border border-gray-200 rounded-xl px-4 py-3 font-sans focus:outline-none focus:border-[#0D4F4F]" />
-          <input type="text" placeholder="Source (e.g. Toronto Star)" value={source} onChange={e => setSource(e.target.value)}
-            className="border border-gray-200 rounded-xl px-4 py-3 font-sans focus:outline-none focus:border-[#0D4F4F]" />
-          <input type="url" placeholder="URL (optional)" value={url} onChange={e => setUrl(e.target.value)}
-            className="border border-gray-200 rounded-xl px-4 py-3 font-sans focus:outline-none focus:border-[#0D4F4F]" />
-          <textarea placeholder="Summary / excerpt…" value={body} onChange={e => setBody(e.target.value)} rows={5}
-            className="border border-gray-200 rounded-xl px-4 py-3 font-sans focus:outline-none focus:border-[#0D4F4F] resize-none" />
+
+          {/* URL input + fetch button */}
           <div>
-            <label className="text-sm font-sans text-gray-500 mb-1 block">Image</label>
-            <input type="file" accept="image/*" onChange={e => setImageFile(e.target.files[0])} className="text-sm font-sans" />
+            <label className="text-xs font-sans text-gray-500 mb-1 block">Article URL</label>
+            <div className="flex gap-2">
+              <input
+                type="url"
+                placeholder="https://toronto-star.com/article..."
+                value={url}
+                onChange={e => { setUrl(e.target.value); setFetched(false) }}
+                className="border border-gray-200 rounded-xl px-4 py-3 font-sans focus:outline-none focus:border-[#0D4F4F] flex-1"
+              />
+              <button
+                onClick={handleFetch}
+                disabled={fetching || !url}
+                className="bg-[#0D4F4F] text-white px-4 py-3 rounded-xl font-sans text-sm flex items-center gap-2 hover:bg-[#1a6b6b] transition disabled:opacity-50 whitespace-nowrap"
+              >
+                {fetching ? <Loader size={14} className="animate-spin" /> : <Link size={14} />}
+                {fetching ? 'Fetching…' : 'Fetch Preview'}
+              </button>
+            </div>
           </div>
+
+          {/* Preview thumbnail */}
+          {previewImage && (
+            <div className="rounded-xl overflow-hidden border border-gray-100">
+              <img src={previewImage} alt="preview" className="w-full h-40 object-cover" />
+            </div>
+          )}
+
+          {/* Editable fields after fetch */}
+          {fetched && (
+            <>
+              <input
+                type="text"
+                placeholder="Headline / Title"
+                value={title}
+                onChange={e => setTitle(e.target.value)}
+                className="border border-gray-200 rounded-xl px-4 py-3 font-sans focus:outline-none focus:border-[#0D4F4F]"
+              />
+              <input
+                type="text"
+                placeholder="Source (e.g. Toronto Star)"
+                value={source}
+                onChange={e => setSource(e.target.value)}
+                className="border border-gray-200 rounded-xl px-4 py-3 font-sans focus:outline-none focus:border-[#0D4F4F]"
+              />
+              <textarea
+                placeholder="Description / excerpt…"
+                value={body}
+                onChange={e => setBody(e.target.value)}
+                rows={3}
+                className="border border-gray-200 rounded-xl px-4 py-3 font-sans focus:outline-none focus:border-[#0D4F4F] resize-none"
+              />
+            </>
+          )}
+
           <div className="flex gap-3 justify-end mt-2">
-            <button onClick={onCancel} className="border border-gray-200 px-5 py-2 rounded-xl font-sans text-sm flex items-center gap-1">
+            <button
+              onClick={onCancel}
+              className="border border-gray-200 px-5 py-2 rounded-xl font-sans text-sm flex items-center gap-1 hover:bg-gray-50"
+            >
               <X size={14} /> Cancel
             </button>
-            <button onClick={handleSave} disabled={saving}
-              className="bg-[#0D4F4F] text-white px-5 py-2 rounded-xl font-sans text-sm flex items-center gap-1">
+            <button
+              onClick={handleSave}
+              disabled={saving || !fetched}
+              className="bg-[#0D4F4F] text-white px-5 py-2 rounded-xl font-sans text-sm flex items-center gap-1 hover:bg-[#1a6b6b] transition disabled:opacity-50"
+            >
               <Check size={14} /> {saving ? 'Saving…' : 'Save'}
             </button>
           </div>
@@ -70,7 +156,11 @@ export default function Press() {
   const [editingItem, setEditingItem] = useState(null)
 
   const fetchPress = async () => {
-    const { data } = await supabase.from('press').select('*').order('sort_order').order('published_at', { ascending: false })
+    const { data } = await supabase
+      .from('press')
+      .select('*')
+      .order('sort_order')
+      .order('published_at', { ascending: false })
     setItems(data || [])
     setLoading(false)
   }
@@ -101,11 +191,13 @@ export default function Press() {
         <h1 className="font-serif text-white text-5xl font-bold mt-2">Press</h1>
       </div>
 
-      <div className="max-w-4xl mx-auto px-6 py-12">
+      <div className="max-w-5xl mx-auto px-6 py-12">
         {user && (
           <div className="flex justify-end mb-8">
-            <button onClick={() => { setEditingItem(null); setShowForm(true) }}
-              className="flex items-center gap-2 bg-[#0D4F4F] text-white px-5 py-2.5 rounded-xl font-sans text-sm hover:bg-[#1a6b6b] transition">
+            <button
+              onClick={() => { setEditingItem(null); setShowForm(true) }}
+              className="flex items-center gap-2 bg-[#0D4F4F] text-white px-5 py-2.5 rounded-xl font-sans text-sm hover:bg-[#1a6b6b] transition"
+            >
               <Plus size={16} /> Add Press Item
             </button>
           </div>
@@ -116,58 +208,81 @@ export default function Press() {
         ) : items.length === 0 ? (
           <p className="text-center font-sans text-[#0D4F4F]/50">No press items yet.</p>
         ) : (
-          <div>
-            {items.map((item, i) => {
-              const isTeal = i % 2 === 1
-              return (
-                <div key={item.id} className="rounded-2xl overflow-hidden mb-6 shadow-sm"
-                  style={{ background: isTeal ? TEAL : 'white' }}>
-                  <div className="md:flex">
-                    {item.image_url && (
-                      <div className="md:w-56 flex-shrink-0">
-                        <img src={item.image_url} alt={item.title} className="w-full h-40 md:h-full object-cover" />
+          /* Grid layout like a press gallery */
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {items.map((item) => (
+              <div key={item.id} className="flex flex-col rounded-2xl overflow-hidden shadow-sm bg-white border border-[#0D4F4F]/10 hover:shadow-lg transition group">
+
+                {/* Thumbnail — clicking opens article */}
+                <a
+                  href={item.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="block flex-shrink-0"
+                >
+                  {item.preview_image || item.image_url ? (
+                    <img
+                      src={item.preview_image || item.image_url}
+                      alt={item.title}
+                      className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  ) : (
+                    <div className="w-full h-48 bg-[#0D4F4F]/10 flex items-center justify-center">
+                      <ExternalLink size={32} className="text-[#0D4F4F]/20" />
+                    </div>
+                  )}
+                </a>
+
+                {/* Content */}
+                <div className="p-5 flex flex-col flex-1">
+                  {item.source && (
+                    <p className="text-xs font-sans font-semibold uppercase tracking-widest text-[#0D4F4F]/40 mb-2">
+                      {item.source}
+                    </p>
+                  )}
+                  <a
+                    href={item.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-serif text-[#0D4F4F] text-lg font-bold leading-snug mb-2 hover:underline"
+                  >
+                    {item.title}
+                  </a>
+                  {item.body && (
+                    <p className="font-sans text-sm text-[#0D4F4F]/60 leading-relaxed flex-1">
+                      {item.body.slice(0, 120)}{item.body.length > 120 ? '…' : ''}
+                    </p>
+                  )}
+
+                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-[#0D4F4F]/10">
+                    <a
+                      href={item.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-1 text-xs font-sans font-semibold text-[#0D4F4F] hover:underline"
+                    >
+                      Read Full Story <ExternalLink size={11} />
+                    </a>
+                    {user && (
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => { setEditingItem(item); setShowForm(true) }}
+                          className="flex items-center gap-1 text-xs px-2 py-1 rounded-lg border border-[#0D4F4F]/20 text-[#0D4F4F] font-sans hover:bg-[#0D4F4F]/5"
+                        >
+                          <Pencil size={10} /> Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(item.id)}
+                          className="flex items-center gap-1 text-xs px-2 py-1 rounded-lg border border-red-200 text-red-400 font-sans hover:bg-red-50"
+                        >
+                          <Trash2 size={10} /> Delete
+                        </button>
                       </div>
                     )}
-                    <div className="p-8 flex-1">
-                      {item.source && (
-                        <p className="font-sans text-xs uppercase tracking-widest mb-2 font-semibold"
-                          style={{ color: isTeal ? 'rgba(250,247,242,0.6)' : 'rgba(13,79,79,0.5)' }}>
-                          {item.source} · {new Date(item.published_at).toLocaleDateString('en-CA', { year: 'numeric', month: 'long', day: 'numeric' })}
-                        </p>
-                      )}
-                      <h2 className="font-serif text-xl font-bold mb-3" style={{ color: isTeal ? CREAM : TEAL }}>
-                        {item.title}
-                      </h2>
-                      {item.body && (
-                        <p className="font-sans text-sm leading-relaxed mb-3" style={{ color: isTeal ? 'rgba(250,247,242,0.75)' : 'rgba(13,79,79,0.7)' }}>
-                          {item.body}
-                        </p>
-                      )}
-                      {item.url && (
-                        <a href={item.url} target="_blank" rel="noreferrer"
-                          className="inline-flex items-center gap-1 text-xs font-sans font-semibold"
-                          style={{ color: isTeal ? CREAM : TEAL }}>
-                          Read Full Story <ExternalLink size={12} />
-                        </a>
-                      )}
-                      {user && (
-                        <div className="flex gap-3 mt-4">
-                          <button onClick={() => { setEditingItem(item); setShowForm(true) }}
-                            className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg border font-sans"
-                            style={{ borderColor: isTeal ? 'rgba(250,247,242,0.3)' : 'rgba(13,79,79,0.3)', color: isTeal ? CREAM : TEAL }}>
-                            <Pencil size={12} /> Edit
-                          </button>
-                          <button onClick={() => handleDelete(item.id)}
-                            className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg border font-sans text-red-400 border-red-200">
-                            <Trash2 size={12} /> Delete
-                          </button>
-                        </div>
-                      )}
-                    </div>
                   </div>
                 </div>
-              )
-            })}
+              </div>
+            ))}
           </div>
         )}
       </div>
