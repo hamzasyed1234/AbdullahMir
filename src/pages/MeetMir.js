@@ -195,7 +195,7 @@ export default function MeetMir() {
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between mb-10">
             <h2 className="font-serif text-[#FAF7F2] text-3xl font-bold">
-              Community Involvement
+              Community
             </h2>
             {user && (
               <button

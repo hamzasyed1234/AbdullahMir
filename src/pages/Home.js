@@ -50,7 +50,7 @@ export default function Home() {
           </span>
           <h1 className="font-serif text-[#0D4F4F] text-6xl md:text-8xl font-bold leading-tight mb-4">
             Abdullah<br />
-            <span className="italic">Mir</span>
+            <span className="bold">MIR</span>
           </h1>
           <div className="h-1 w-16 bg-[#0D4F4F] mb-6 rounded-full" />
           <p className="text-[#0D4F4F]/80 font-sans text-lg md:text-xl max-w-sm leading-relaxed mb-10">
