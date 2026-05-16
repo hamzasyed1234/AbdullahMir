@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
 import { useAuth } from '../context/AuthContext'
-import { Plus, Pencil, Trash2, Check, X, ExternalLink, Link, Loader } from 'lucide-react'
+import { Plus, Pencil, Trash2, Check, X, ExternalLink, Link, Loader, ImagePlus } from 'lucide-react'
 
 const CREAM = '#FAF7F2'
 
@@ -30,6 +30,7 @@ function PressForm({ initial = {}, onSave, onCancel }) {
   const [fetching, setFetching] = useState(false)
   const [fetched, setFetched] = useState(!!initial.title)
   const [saving, setSaving] = useState(false)
+  const [uploadingImage, setUploadingImage] = useState(false)
 
   const handleFetch = async () => {
     if (!url) return
@@ -41,8 +42,24 @@ function PressForm({ initial = {}, onSave, onCancel }) {
       setBody(preview.description)
       setPreviewImage(preview.image)
       setFetched(true)
+    } else {
+      // Even if preview fails, still mark as fetched so fields show
+      setFetched(true)
     }
     setFetching(false)
+  }
+
+  const handleManualImageUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    setUploadingImage(true)
+    const fileName = `press-${Date.now()}.${file.name.split('.').pop()}`
+    const { error } = await supabase.storage.from('images').upload(fileName, file, { upsert: true })
+    if (!error) {
+      const { data } = supabase.storage.from('images').getPublicUrl(fileName)
+      setPreviewImage(data.publicUrl)
+    }
+    setUploadingImage(false)
   }
 
   const handleSave = async () => {
@@ -59,6 +76,8 @@ function PressForm({ initial = {}, onSave, onCancel }) {
           {initial.id ? 'Edit Press Item' : 'Add Press Item'}
         </h3>
         <div className="flex flex-col gap-4">
+
+          {/* URL + Fetch */}
           <div>
             <label className="text-xs font-sans text-gray-500 mb-1 block">Article URL</label>
             <div className="flex gap-2">
@@ -72,21 +91,47 @@ function PressForm({ initial = {}, onSave, onCancel }) {
               </button>
             </div>
           </div>
-          {previewImage && (
-            <div className="rounded-xl overflow-hidden border border-gray-100">
-              <img src={previewImage} alt="preview" className="w-full h-40 object-cover" />
+
+          {/* Image preview + manual upload */}
+          {fetched && (
+            <div>
+              <label className="text-xs font-sans text-gray-500 mb-2 block">Thumbnail Image</label>
+              {previewImage ? (
+                <div className="relative rounded-xl overflow-hidden border border-gray-100 mb-2">
+                  <img src={previewImage} alt="preview" className="w-full h-40 object-cover" />
+                  <button
+                    onClick={() => setPreviewImage('')}
+                    className="absolute top-2 right-2 bg-black/50 text-white rounded-full p-1 hover:bg-black/70 transition"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              ) : (
+                <div className="border-2 border-dashed border-gray-200 rounded-xl h-32 flex items-center justify-center mb-2 text-gray-400">
+                  <span className="text-sm font-sans">No image — upload one below</span>
+                </div>
+              )}
+              {/* Manual upload button */}
+              <label className="flex items-center gap-2 cursor-pointer bg-[#0D4F4F]/5 hover:bg-[#0D4F4F]/10 border border-[#0D4F4F]/20 text-[#0D4F4F] px-4 py-2 rounded-xl font-sans text-sm transition w-fit">
+                {uploadingImage ? <Loader size={14} className="animate-spin" /> : <ImagePlus size={14} />}
+                {uploadingImage ? 'Uploading…' : 'Upload Image Manually'}
+                <input type="file" accept="image/*" className="hidden" onChange={handleManualImageUpload} />
+              </label>
             </div>
           )}
+
+          {/* Editable fields */}
           {fetched && (
             <>
               <input type="text" placeholder="Headline / Title" value={title} onChange={e => setTitle(e.target.value)}
                 className="border border-gray-200 rounded-xl px-4 py-3 font-sans focus:outline-none focus:border-[#0D4F4F]" />
-              <input type="text" placeholder="Source (e.g. Toronto Star)" value={source} onChange={e => setSource(e.target.value)}
+              <input type="text" placeholder="Source (e.g. CBC, Toronto Star)" value={source} onChange={e => setSource(e.target.value)}
                 className="border border-gray-200 rounded-xl px-4 py-3 font-sans focus:outline-none focus:border-[#0D4F4F]" />
               <textarea placeholder="Description / excerpt…" value={body} onChange={e => setBody(e.target.value)} rows={3}
                 className="border border-gray-200 rounded-xl px-4 py-3 font-sans focus:outline-none focus:border-[#0D4F4F] resize-none" />
             </>
           )}
+
           <div className="flex gap-3 justify-end mt-2">
             <button onClick={onCancel} className="border border-gray-200 px-5 py-2 rounded-xl font-sans text-sm flex items-center gap-1 hover:bg-gray-50">
               <X size={14} /> Cancel
@@ -137,7 +182,7 @@ export default function Press() {
   return (
     <div className="pt-20 min-h-screen" style={{ background: CREAM }}>
 
-      {/* Header — cream bg, teal text, line underneath */}
+      {/* Header */}
       <div className="px-10 md:px-20 pt-16 pb-12 flex flex-col items-center text-center" style={{ background: CREAM }}>
         <span className="text-[#0D4F4F]/40 text-xs uppercase tracking-widest font-sans">In The News</span>
         <h1 className="font-serif text-[#0D4F4F] text-5xl md:text-6xl font-bold mt-2 mb-4">Press</h1>

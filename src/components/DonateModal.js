@@ -49,13 +49,14 @@ function DonateForm({ onClose }) {
     try {
       // Call Supabase edge function to create payment intent
       const res = await fetch(`${SUPABASE_URL}/functions/v1/create-payment-intent`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': process.env.REACT_APP_SUPABASE_ANON_KEY,
-        },
-        body: JSON.stringify({ amount: finalAmount, name, email }),
-      })
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'apikey': process.env.REACT_APP_SUPABASE_ANON_KEY,
+    'Authorization': `Bearer ${process.env.REACT_APP_SUPABASE_ANON_KEY}`,
+  },
+  body: JSON.stringify({ amount: finalAmount, name, email }),
+})
 
       const { clientSecret, error: fnError } = await res.json()
       if (fnError) throw new Error(fnError)
