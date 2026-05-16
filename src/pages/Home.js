@@ -35,7 +35,7 @@ export default function Home() {
         {/* Right side — full height photo */}
         <div className="absolute right-0 top-0 h-full w-1/2 md:w-[55%]">
           <img
-            src="/DSCF4981.jpg"
+            src="/DSCF4977-E.jpg"
             alt="Abdullah Mir"
             className="w-full h-full object-cover object-center"
           />
