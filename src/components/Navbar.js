@@ -25,7 +25,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link to="/" className="flex items-center flex-shrink-0">
             <img
-              src="/logo.png"
+              src="/logo2.png"
               alt="Abdullah Mir"
               style={{ height: '40px', width: 'auto' }}
               className="object-contain transition-all duration-300 hover:scale-105"

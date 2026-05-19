@@ -29,51 +29,81 @@ export default function Home() {
   return (
     <div className="pt-0">
 
-      {/* Hero — split layout */}
-      <div className="relative h-screen w-full overflow-hidden bg-[#FAF7F2]">
+      {/* Hero — MOBILE: stacked, DESKTOP: side by side */}
+      <div className="bg-[#FAF7F2] min-h-screen flex flex-col md:flex-row md:items-stretch">
 
-        {/* Right side — full height photo */}
-        <div className="absolute right-0 top-0 h-full w-1/2 md:w-[55%]">
-          <img
-            src="/DSCF4977-E.jpg"
-            alt="Abdullah Mir"
-            className="w-full h-full object-cover object-center"
-          />
-          {/* subtle gradient fade on the left edge of photo so it blends */}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#FAF7F2] via-[#FAF7F2]/10 to-transparent" />
-        </div>
+        {/* Mobile: photo on top, Desktop: photo on right */}
+        {/* Mobile — full screen photo with text overlay */}
+<div className="block md:hidden portrait:block landscape:hidden relative w-full flex-shrink-0" style={{ height: 'calc(100dvh - 64px)', marginTop: '64px' }}>
+  <img
+    src="/DSCF4977-E.jpg"
+    alt="Abdullah Mir"
+    className="w-full h-full object-cover object-top"
+  />
+  {/* Dark gradient at bottom for text readability */}
+  <div className="absolute inset-0 bg-gradient-to-t from-[#0D4F4F]/80 via-[#0D4F4F]/20 to-transparent" />
+  {/* Text overlay */}
+  <div className="absolute bottom-0 left-0 right-0 p-8 pb-12">
+    <span className="text-[#FAF7F2]/70 font-sans text-xs uppercase tracking-[0.3em] mb-3 block">Pickering · Ward 1</span>
+    <h1 className="font-serif text-[#FAF7F2] text-5xl font-bold leading-tight mb-3">
+      Abdullah<br /><span className="font-black">MIR</span>
+    </h1>
+    <div className="h-1 w-12 bg-[#FAF7F2] mb-4 rounded-full" />
+    <p className="text-[#FAF7F2]/80 font-sans text-sm leading-relaxed mb-6">
+      Community builder. Resident advocate. Running for City Councillor.
+    </p>
+    <div className="flex gap-3 flex-wrap">
+      <a href="#support" className="bg-[#FAF7F2] text-[#0D4F4F] px-6 py-3 rounded-full font-sans font-semibold text-sm hover:bg-white transition shadow-lg">
+        Show Your Support
+      </a>
+      <a href="/meet-mir" className="border-2 border-[#FAF7F2] text-[#FAF7F2] px-6 py-3 rounded-full font-sans font-semibold text-sm hover:bg-[#FAF7F2]/10 transition">
+        Meet Abdullah
+      </a>
+    </div>
+  </div>
+</div>
 
-        {/* Left side — text */}
-        <div className="relative z-10 flex flex-col justify-center h-full px-10 md:px-20 max-w-2xl">
-          <span className="text-[#0D4F4F]/50 font-sans text-xs uppercase tracking-[0.3em] mb-6">
+{/* Left side — text (desktop only) */}
+<div className="hidden md:flex landscape:flex relative z-10 flex-col justify-center px-8 md:px-20 py-10 md:py-0 max-w-2xl md:w-1/2 flex-shrink-0">
+          <span className="text-[#0D4F4F]/50 font-sans text-xs uppercase tracking-[0.3em] mb-4 md:mb-6">
             Pickering · Ward 1
           </span>
-          <h1 className="font-serif text-[#0D4F4F] text-6xl md:text-8xl font-bold leading-tight mb-4">
+          <h1 className="font-serif text-[#0D4F4F] text-5xl md:text-7xl lg:text-8xl font-bold leading-tight mb-4">
             Abdullah<br />
-            <span className="bold">MIR</span>
+            <span className="font-black">MIR</span>
           </h1>
-          <div className="h-1 w-16 bg-[#0D4F4F] mb-6 rounded-full" />
-          <p className="text-[#0D4F4F]/80 font-sans text-lg md:text-xl max-w-sm leading-relaxed mb-10">
+          <div className="h-1 w-16 bg-[#0D4F4F] mb-4 md:mb-6 rounded-full" />
+          <p className="text-[#0D4F4F]/80 font-sans text-base md:text-lg lg:text-xl max-w-sm leading-relaxed mb-8 md:mb-10">
             Community builder. Resident advocate. Running for City Councillor.
           </p>
-          <div className="flex gap-4 flex-wrap">
+          <div className="flex gap-3 md:gap-4 flex-wrap">
             <a
               href="#support"
-              className="bg-[#0D4F4F] text-[#FAF7F2] px-8 py-3 rounded-full font-sans font-semibold hover:bg-[#1a6b6b] transition shadow-lg"
+              className="bg-[#0D4F4F] text-[#FAF7F2] px-6 md:px-8 py-3 rounded-full font-sans font-semibold hover:bg-[#1a6b6b] transition shadow-lg text-sm md:text-base"
             >
               Show Your Support
             </a>
             <a
               href="/meet-mir"
-              className="border-2 border-[#0D4F4F] text-[#0D4F4F] px-8 py-3 rounded-full font-sans font-semibold hover:bg-[#0D4F4F]/10 transition"
+              className="border-2 border-[#0D4F4F] text-[#0D4F4F] px-6 md:px-8 py-3 rounded-full font-sans font-semibold hover:bg-[#0D4F4F]/10 transition text-sm md:text-base"
             >
               Meet Abdullah
             </a>
           </div>
         </div>
 
-        {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce text-[#0D4F4F]/30">
+        {/* DESKTOP photo — right side, hidden on mobile */}
+        <div className="hidden md:block landscape:block absolute right-0 top-0 h-full w-[55%]">
+          <img
+            src="/DSCF4977-E.jpg"
+            alt="Abdullah Mir"
+            className="w-full h-full object-cover object-center"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#FAF7F2] via-[#FAF7F2]/10 to-transparent" />
+        </div>
+
+        {/* Scroll indicator — desktop only */}
+        <div className="hidden md:flex absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce text-[#0D4F4F]/30">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M12 5v14M5 12l7 7 7-7"/>
           </svg>
