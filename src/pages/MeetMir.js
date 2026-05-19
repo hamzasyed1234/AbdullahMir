@@ -36,6 +36,7 @@ function CommunityForm({ initial = {}, onSave, onCancel }) {
         <h3 className="font-serif text-[#0D4F4F] text-2xl font-bold mb-6">
           {initial.id ? 'Edit Involvement' : 'Add Involvement'}
         </h3>
+
         <div className="flex flex-col gap-4">
           <input
             type="text"
@@ -44,6 +45,7 @@ function CommunityForm({ initial = {}, onSave, onCancel }) {
             onChange={e => setRole(e.target.value)}
             className="border border-gray-200 rounded-xl px-4 py-3 font-sans focus:outline-none focus:border-[#0D4F4F]"
           />
+
           <input
             type="text"
             placeholder="Organization"
@@ -51,6 +53,7 @@ function CommunityForm({ initial = {}, onSave, onCancel }) {
             onChange={e => setOrg(e.target.value)}
             className="border border-gray-200 rounded-xl px-4 py-3 font-sans focus:outline-none focus:border-[#0D4F4F]"
           />
+
           <input
             type="text"
             placeholder="Start (e.g. December 2022)"
@@ -58,6 +61,7 @@ function CommunityForm({ initial = {}, onSave, onCancel }) {
             onChange={e => setPeriodStart(e.target.value)}
             className="border border-gray-200 rounded-xl px-4 py-3 font-sans focus:outline-none focus:border-[#0D4F4F]"
           />
+
           <input
             type="text"
             placeholder="End (e.g. Present or June 2024)"
@@ -65,6 +69,7 @@ function CommunityForm({ initial = {}, onSave, onCancel }) {
             onChange={e => setPeriodEnd(e.target.value)}
             className="border border-gray-200 rounded-xl px-4 py-3 font-sans focus:outline-none focus:border-[#0D4F4F]"
           />
+
           <div className="flex gap-3 justify-end mt-2">
             <button
               onClick={onCancel}
@@ -72,6 +77,7 @@ function CommunityForm({ initial = {}, onSave, onCancel }) {
             >
               <X size={14} /> Cancel
             </button>
+
             <button
               onClick={handleSave}
               disabled={saving}
@@ -88,22 +94,41 @@ function CommunityForm({ initial = {}, onSave, onCancel }) {
 
 export default function MeetMir() {
   const { user } = useAuth()
-  const [content, setContent] = useState({ about_intro: DEFAULT_INTRO })
+
+  const [content, setContent] = useState({
+    about_intro: DEFAULT_INTRO
+  })
+
   const [photo, setPhoto] = useState('/DSCF4950.jpg')
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
+
   const [community, setCommunity] = useState([])
+
   const [showForm, setShowForm] = useState(false)
   const [editingItem, setEditingItem] = useState(null)
 
   useEffect(() => {
-    supabase.from('page_content').select('*').eq('page', 'meet').then(({ data }) => {
-      if (data) {
-        const map = {}
-        data.forEach(r => { map[r.key] = r.value })
-        setContent(prev => ({ ...prev, ...map }))
-        if (map.photo_url) setPhoto(map.photo_url)
-      }
-    })
+    supabase
+      .from('page_content')
+      .select('*')
+      .eq('page', 'meet')
+      .then(({ data }) => {
+        if (data) {
+          const map = {}
+
+          data.forEach(r => {
+            map[r.key] = r.value
+          })
+
+          setContent(prev => ({
+            ...prev,
+            ...map
+          }))
+
+          if (map.photo_url) setPhoto(map.photo_url)
+        }
+      })
+
     fetchCommunity()
   }, [])
 
@@ -112,94 +137,172 @@ export default function MeetMir() {
       .from('community_involvement')
       .select('*')
       .order('sort_order')
+
     setCommunity(data || [])
   }
 
   const handlePhotoUpload = async (e) => {
     const file = e.target.files[0]
+
     if (!file) return
+
     setUploadingPhoto(true)
-    const fileName = `meet-photo-${Date.now()}.${file.name.split('.').pop()}`
-    const { error } = await supabase.storage.from('images').upload(fileName, file, { upsert: true })
+
+    const fileName = `meet-photo-${Date.now()}.${file.name
+      .split('.')
+      .pop()}`
+
+    const { error } = await supabase.storage
+      .from('images')
+      .upload(fileName, file, { upsert: true })
+
     if (!error) {
-      const { data } = supabase.storage.from('images').getPublicUrl(fileName)
+      const { data } = supabase.storage
+        .from('images')
+        .getPublicUrl(fileName)
+
       const url = data.publicUrl
+
       setPhoto(url)
+
       await supabase.from('page_content').upsert(
-        { page: 'meet', key: 'photo_url', value: url, updated_at: new Date() },
-        { onConflict: 'page,key' }
+        {
+          page: 'meet',
+          key: 'photo_url',
+          value: url,
+          updated_at: new Date()
+        },
+        {
+          onConflict: 'page,key'
+        }
       )
     }
+
     setUploadingPhoto(false)
   }
 
   const handleSave = async (fields) => {
     if (editingItem) {
-      await supabase.from('community_involvement').update(fields).eq('id', editingItem.id)
+      await supabase
+        .from('community_involvement')
+        .update(fields)
+        .eq('id', editingItem.id)
     } else {
-      await supabase.from('community_involvement').insert([{ ...fields, sort_order: community.length }])
+      await supabase
+        .from('community_involvement')
+        .insert([
+          {
+            ...fields,
+            sort_order: community.length
+          }
+        ])
     }
+
     setShowForm(false)
     setEditingItem(null)
+
     fetchCommunity()
   }
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this item?')) return
-    await supabase.from('community_involvement').delete().eq('id', id)
+
+    await supabase
+      .from('community_involvement')
+      .delete()
+      .eq('id', id)
+
     fetchCommunity()
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2]" style={{ paddingTop: '64px' }}>
+    <div
+      className="min-h-screen bg-[#FAF7F2]"
+      style={{ paddingTop: '64px' }}
+    >
 
-      {/* Main content — photo left, text right */}
-      <div className="max-w-6xl mx-auto px-6 py-16 flex flex-col md:flex-row gap-12 items-start">
+      {/* Main content */}
+      <div className="max-w-6xl mx-auto px-6 py-16">
 
-        {/* LEFT — Photo */}
-        <div className="relative flex-shrink-0 w-full md:w-96">
-          <img
-            src={photo}
-            alt="Abdullah Mir"
-            className="w-full rounded-2xl shadow-2xl object-cover object-top"
-          />
-          {user && (
-            <label className="absolute bottom-4 right-4 bg-[#0D4F4F] text-[#FAF7F2] px-3 py-2 rounded-xl text-xs font-sans flex items-center gap-1 cursor-pointer hover:bg-[#1a6b6b] transition">
-              <Pencil size={12} />
-              {uploadingPhoto ? 'Uploading…' : 'Change Photo'}
-              <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
-            </label>
-          )}
+        {/* Title */}
+        <div className="mb-10">
+          <span className="text-[#0D4F4F]/40 text-xs uppercase tracking-widest font-sans">
+            Get to Know
+          </span>
+
+          <h1 className="font-serif text-[#0D4F4F] text-5xl font-bold mt-2 mb-6">
+            Meet Mir
+          </h1>
+
+          <div className="h-1 w-16 bg-[#0D4F4F] rounded-full" />
         </div>
 
-        {/* RIGHT — Text */}
-        <div className="flex-1">
-          <span className="text-[#0D4F4F]/40 text-xs uppercase tracking-widest font-sans">Get to Know</span>
-          <h1 className="font-serif text-[#0D4F4F] text-5xl font-bold mt-2 mb-6">Meet Mir</h1>
-          <div className="h-1 w-16 bg-[#0D4F4F] rounded-full mb-8" />
-          <div className="font-sans text-[#0D4F4F]/80 text-base leading-relaxed whitespace-pre-line">
-            <EditableText
-              page="meet"
-              contentKey="about_intro"
-              value={content.about_intro}
-              onUpdate={v => setContent(c => ({ ...c, about_intro: v }))}
-              multiline
-              className="block"
+        {/* Photo + Text */}
+        <div className="flex flex-col md:flex-row gap-12 items-start">
+
+          {/* LEFT — Photo */}
+          <div className="relative flex-shrink-0 w-full md:w-96">
+            <img
+              src={photo}
+              alt="Abdullah Mir"
+              className="w-full rounded-2xl shadow-2xl object-cover object-top"
             />
+
+            {user && (
+              <label className="absolute bottom-4 right-4 bg-[#0D4F4F] text-[#FAF7F2] px-3 py-2 rounded-xl text-xs font-sans flex items-center gap-1 cursor-pointer hover:bg-[#1a6b6b] transition">
+                <Pencil size={12} />
+
+                {uploadingPhoto
+                  ? 'Uploading…'
+                  : 'Change Photo'}
+
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handlePhotoUpload}
+                />
+              </label>
+            )}
           </div>
+
+          {/* RIGHT — Text */}
+          <div className="flex-1 mb-8 md:mb-0">
+            <div className="font-sans text-[#0D4F4F]/80 text-base leading-relaxed whitespace-pre-line">
+              <EditableText
+                page="meet"
+                contentKey="about_intro"
+                value={content.about_intro}
+                onUpdate={v =>
+                  setContent(c => ({
+                    ...c,
+                    about_intro: v
+                  }))
+                }
+                multiline
+                className="block"
+              />
+            </div>
+          </div>
+
         </div>
       </div>
 
       {/* Community involvement */}
       <div className="bg-[#0D4F4F] py-16 px-6">
         <div className="max-w-4xl mx-auto">
+
           <div className="flex items-center justify-between mb-10">
             <h2 className="font-serif text-[#FAF7F2] text-3xl font-bold">
               Community
             </h2>
+
             {user && (
               <button
-                onClick={() => { setEditingItem(null); setShowForm(true) }}
+                onClick={() => {
+                  setEditingItem(null)
+                  setShowForm(true)
+                }}
                 className="flex items-center gap-2 bg-[#FAF7F2] text-[#0D4F4F] px-4 py-2 rounded-xl font-sans text-sm font-semibold hover:bg-[#FAF7F2]/90 transition"
               >
                 <Plus size={15} /> Add
@@ -209,31 +312,48 @@ export default function MeetMir() {
 
           <div className="grid md:grid-cols-2 gap-4">
             {community.map((item) => (
-              <div key={item.id} className="bg-[#FAF7F2]/10 rounded-2xl p-6 border border-[#FAF7F2]/10 relative group">
+              <div
+                key={item.id}
+                className="bg-[#FAF7F2]/10 rounded-2xl p-6 border border-[#FAF7F2]/10 relative group"
+              >
                 <p className="text-[#FAF7F2]/50 font-sans text-xs uppercase tracking-widest mb-1">
                   {item.period_start} – {item.period_end}
                 </p>
-                <p className="text-[#FAF7F2] font-serif text-lg font-semibold">{item.role}</p>
-                <p className="text-[#FAF7F2]/80 font-sans text-sm mt-1">{item.org}</p>
+
+                <p className="text-[#FAF7F2] font-serif text-lg font-semibold">
+                  {item.role}
+                </p>
+
+                <p className="text-[#FAF7F2]/80 font-sans text-sm mt-1">
+                  {item.org}
+                </p>
+
                 {user && (
                   <div className="flex gap-2 mt-4">
+
                     <button
-                      onClick={() => { setEditingItem(item); setShowForm(true) }}
+                      onClick={() => {
+                        setEditingItem(item)
+                        setShowForm(true)
+                      }}
                       className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg border border-[#FAF7F2]/30 text-[#FAF7F2] font-sans hover:bg-[#FAF7F2]/10 transition"
                     >
                       <Pencil size={11} /> Edit
                     </button>
+
                     <button
                       onClick={() => handleDelete(item.id)}
                       className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg border border-red-400/40 text-red-300 font-sans hover:bg-red-400/10 transition"
                     >
                       <Trash2 size={11} /> Delete
                     </button>
+
                   </div>
                 )}
               </div>
             ))}
           </div>
+
         </div>
       </div>
 
@@ -242,7 +362,10 @@ export default function MeetMir() {
         <CommunityForm
           initial={editingItem || {}}
           onSave={handleSave}
-          onCancel={() => { setShowForm(false); setEditingItem(null) }}
+          onCancel={() => {
+            setShowForm(false)
+            setEditingItem(null)
+          }}
         />
       )}
 
