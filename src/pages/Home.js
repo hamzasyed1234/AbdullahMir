@@ -50,7 +50,8 @@ export default function Home() {
     </h1>
     <div className="h-1 w-12 bg-[#FAF7F2] mb-4 rounded-full" />
     <p className="text-[#FAF7F2]/80 font-sans text-sm leading-relaxed mb-6">
-      Community builder. Resident advocate. Running for City Councillor.
+      Candidate, City Councillor Ward 1 in Pickering
+      Community Builder and Resident Advocate
     </p>
     <div className="flex gap-3 flex-wrap">
       <a href="#support" className="bg-[#FAF7F2] text-[#0D4F4F] px-6 py-3 rounded-full font-sans font-semibold text-sm hover:bg-white transition shadow-lg">
@@ -64,17 +65,13 @@ export default function Home() {
 </div>
 
 {/* Left side — text (desktop only) */}
-<div className="hidden md:flex landscape:flex relative z-10 flex-col justify-center px-8 md:px-20 py-10 md:py-0 max-w-2xl md:w-1/2 flex-shrink-0">
-          <span className="text-[#0D4F4F]/50 font-sans text-xs uppercase tracking-[0.3em] mb-4 md:mb-6">
-            Pickering · Ward 1
-          </span>
-          <h1 className="font-serif text-[#0D4F4F] text-5xl md:text-7xl lg:text-8xl font-bold leading-tight mb-4">
-            Abdullah<br />
-            <span className="font-black">MIR</span>
-          </h1>
-          <div className="h-1 w-16 bg-[#0D4F4F] mb-4 md:mb-6 rounded-full" />
-          <p className="text-[#0D4F4F]/80 font-sans text-base md:text-lg lg:text-xl max-w-sm leading-relaxed mb-8 md:mb-10">
-            Community builder. Resident advocate. Running for City Councillor.
+<div className="hidden md:flex landscape:flex relative z-10 flex-col justify-center px-8 md:px-20 py-10 md:py-0 md:w-1/2 w-full flex-shrink-0">
+          
+          <h1 className="font-serif text-[#0D4F4F] text-5xl md:text-7xl lg:text-8xl font-bold leading-tight mb-4 whitespace-nowrap">
+  Abdullah Mir
+</h1>
+          <p className="text-[#0D4F4F]/80 font-sans text-base md:text-lg lg:text-xl leading-relaxed mb-8 md:mb-10 whitespace-nowrap">
+            Candidate, City Councillor Ward 1 in Pickering
           </p>
           <div className="flex gap-3 md:gap-4 flex-wrap">
             <a
@@ -95,7 +92,7 @@ export default function Home() {
         {/* DESKTOP photo — right side, hidden on mobile */}
         <div className="hidden md:block landscape:block absolute right-0 top-0 h-full w-[55%]">
           <img
-            src="/DSCF4977-E.jpg"
+            src="/DSCF4981.jpg"
             alt="Abdullah Mir"
             className="w-full h-full object-cover object-center"
           />

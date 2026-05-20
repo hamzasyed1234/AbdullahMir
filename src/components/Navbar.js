@@ -11,7 +11,7 @@ export default function Navbar() {
 
   const links = [
     { to: '/', label: 'Home' },
-    { to: '/meet-mir', label: 'Meet Mir' },
+    { to: '/meet-mir', label: 'About Me' },
     { to: '/priorities', label: 'Priorities' },
     { to: '/articles', label: 'Articles' },
     { to: '/press', label: 'Press' },

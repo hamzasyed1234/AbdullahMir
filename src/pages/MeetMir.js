@@ -231,7 +231,7 @@ export default function MeetMir() {
           </span>
 
           <h1 className="font-serif text-[#0D4F4F] text-5xl font-bold mt-2 mb-6">
-            Meet Mir
+            About Me
           </h1>
 
           <div className="h-1 w-16 bg-[#0D4F4F] rounded-full" />
