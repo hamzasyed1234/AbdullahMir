@@ -1,4 +1,3 @@
-import { Mail } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 function InstagramIcon() {
@@ -74,9 +73,7 @@ export default function Footer() {
             <a href="https://www.youtube.com/@theabdullahmir" target="_blank" rel="noreferrer" className="hover:text-cream transition opacity-70 hover:opacity-100" aria-label="YouTube">
               <YouTubeIcon />
             </a>
-            <a href="mailto:votemirward1@gmail.com" className="hover:text-cream transition opacity-70 hover:opacity-100" aria-label="Email">
-              <Mail size={22} />
-            </a>
+
           </div>
           <p className="text-xs mt-4 opacity-50">© {new Date().getFullYear()} Abdullah Mir. All rights reserved.</p>
         </div>

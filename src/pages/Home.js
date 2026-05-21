@@ -125,8 +125,8 @@ export default function Home() {
 
         {/* Content below the photo */}
         <div className="bg-[#FAF7F2] px-5 py-8 flex flex-col gap-5">
-          <p className="text-[#0D4F4F]/70 font-sans text-sm leading-relaxed">
-            Candidate, City Councillor Ward 1 in Pickering — Community Builder and Resident Advocate
+          <p className="text-[#0D4F4F]/80 font-sans text-base leading-relaxed">
+            Candidate, City Councillor Ward 1 in Pickering
           </p>
           <div className="flex gap-3 flex-wrap">
             <a href="#support" className="bg-[#0D4F4F] text-[#FAF7F2] px-6 py-3 rounded-full font-sans font-semibold text-sm hover:bg-[#1a6b6b] transition shadow-md">Show Your Support</a>
@@ -157,12 +157,12 @@ export default function Home() {
         {/* Desktop right — photo */}
         <div className="absolute right-0 top-0 h-full w-[55%]">
           <picture>
-            <source srcSet="/DSCF4981.webp" type="image/webp" />
+            <source srcSet="/DSCF4977-E.webp" type="image/webp" />
             <img
-              src="/DSCF4981.jpg"
+              src="/DSCF4977-E.jpg"
               alt="Abdullah Mir"
               className="w-full h-full object-cover"
-              style={{ objectPosition: '72% center' }}
+              style={{ objectPosition: '72% top' }}
               fetchpriority="high"
               decoding="async"
             />
