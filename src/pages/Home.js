@@ -98,11 +98,12 @@ export default function Home() {
   return (
     <div className="pt-0">
 
-      <div className="bg-[#FAF7F2] min-h-screen flex flex-col md:flex-row md:items-stretch">
+      {/* ── MOBILE LAYOUT ── */}
+      <div className="md:hidden" style={{ paddingTop: '64px' }}>
 
-        {/* Mobile hero */}
-        <div className="block md:hidden portrait:block landscape:hidden relative w-full flex-shrink-0" style={{ height: 'calc(100dvh - 64px)', marginTop: '64px' }}>
-          <picture style={{ display: 'contents' }}>
+        {/* Full-width hero photo with name overlaid at bottom */}
+        <div className="relative w-full" style={{ height: '55vw', minHeight: '260px', maxHeight: '420px' }}>
+          <picture>
             <source srcSet="/DSCF4977-E.webp" type="image/webp" />
             <img
               src="/DSCF4977-E.jpg"
@@ -112,26 +113,34 @@ export default function Home() {
               decoding="async"
             />
           </picture>
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0D4F4F]/80 via-[#0D4F4F]/20 to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 p-8 pb-12">
-            <span className="text-[#FAF7F2]/70 font-sans text-xs uppercase tracking-[0.3em] mb-3 block">Pickering · Ward 1</span>
-            <h1 className="font-serif text-[#FAF7F2] text-5xl font-bold leading-tight mb-3">
-              Abdullah<br /><span className="font-black">MIR</span>
+          {/* Gradient + name overlay at bottom of photo */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0D4F4F]/80 via-[#0D4F4F]/10 to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 px-5 pb-5">
+            <span className="text-[#FAF7F2]/70 font-sans text-xs uppercase tracking-[0.25em] mb-1 block">Pickering · Ward 1</span>
+            <h1 className="font-serif text-[#FAF7F2] text-4xl font-bold leading-tight">
+              Abdullah <span className="font-black">Mir</span>
             </h1>
-            <div className="h-1 w-12 bg-[#FAF7F2] mb-4 rounded-full" />
-            <p className="text-[#FAF7F2]/80 font-sans text-sm leading-relaxed mb-6">
-              Candidate, City Councillor Ward 1 in Pickering — Community Builder and Resident Advocate
-            </p>
-            <div className="flex gap-3 flex-wrap mb-5">
-              <a href="#support" className="bg-[#FAF7F2] text-[#0D4F4F] px-6 py-3 rounded-full font-sans font-semibold text-sm hover:bg-white transition shadow-lg">Show Your Support</a>
-              <a href="/meet-mir" className="border-2 border-[#FAF7F2] text-[#FAF7F2] px-6 py-3 rounded-full font-sans font-semibold text-sm hover:bg-[#FAF7F2]/10 transition">Meet Abdullah</a>
-            </div>
-            <SocialLinks dark />
           </div>
         </div>
 
+        {/* Content below the photo */}
+        <div className="bg-[#FAF7F2] px-5 py-8 flex flex-col gap-5">
+          <p className="text-[#0D4F4F]/70 font-sans text-sm leading-relaxed">
+            Candidate, City Councillor Ward 1 in Pickering — Community Builder and Resident Advocate
+          </p>
+          <div className="flex gap-3 flex-wrap">
+            <a href="#support" className="bg-[#0D4F4F] text-[#FAF7F2] px-6 py-3 rounded-full font-sans font-semibold text-sm hover:bg-[#1a6b6b] transition shadow-md">Show Your Support</a>
+            <a href="/meet-mir" className="border-2 border-[#0D4F4F] text-[#0D4F4F] px-6 py-3 rounded-full font-sans font-semibold text-sm hover:bg-[#0D4F4F]/10 transition">Meet Abdullah</a>
+          </div>
+          <SocialLinks />
+        </div>
+      </div>
+
+      {/* ── DESKTOP LAYOUT ── */}
+      <div className="hidden md:flex bg-[#FAF7F2] min-h-screen flex-col md:flex-row md:items-stretch">
+
         {/* Desktop left — text */}
-        <div className="hidden md:flex landscape:flex relative z-10 flex-col justify-center px-8 md:px-20 py-10 md:py-0 md:w-1/2 w-full flex-shrink-0">
+        <div className="relative z-10 flex flex-col justify-center px-8 md:px-20 py-10 md:py-0 md:w-1/2 w-full flex-shrink-0">
           <h1 className="font-serif text-[#0D4F4F] text-5xl md:text-7xl lg:text-8xl font-bold leading-tight mb-4 whitespace-nowrap">
             Abdullah Mir
           </h1>
@@ -146,8 +155,8 @@ export default function Home() {
         </div>
 
         {/* Desktop right — photo */}
-        <div className="hidden md:block landscape:block absolute right-0 top-0 h-full w-[55%]">
-          <picture style={{ display: 'contents' }}>
+        <div className="absolute right-0 top-0 h-full w-[55%]">
+          <picture>
             <source srcSet="/DSCF4981.webp" type="image/webp" />
             <img
               src="/DSCF4981.jpg"
@@ -162,14 +171,14 @@ export default function Home() {
         </div>
 
         {/* Scroll indicator */}
-        <div className="hidden md:flex absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce text-[#0D4F4F]/30">
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce text-[#0D4F4F]/30">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M12 5v14M5 12l7 7 7-7"/>
           </svg>
         </div>
       </div>
 
-      {/* Support Form */}
+      {/* ── SHARED: Support Form ── */}
       <div id="support" className="bg-[#0D4F4F] py-16 px-6">
         <div className="max-w-xl mx-auto text-center">
           <h2 className="font-serif text-[#FAF7F2] text-3xl font-bold mb-2">Stand With Abdullah</h2>
@@ -191,7 +200,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Vision Section */}
+      {/* ── SHARED: Vision Section ── */}
       <div className="max-w-5xl mx-auto px-6 py-20">
         <div className="flex items-center gap-4 mb-6">
           <div className="h-px bg-[#0D4F4F]/20 flex-1" />
