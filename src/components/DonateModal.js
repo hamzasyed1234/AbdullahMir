@@ -47,16 +47,15 @@ function DonateForm({ onClose }) {
     setError('')
 
     try {
-      // Call Supabase edge function to create payment intent
       const res = await fetch(`${SUPABASE_URL}/functions/v1/create-payment-intent`, {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'apikey': process.env.REACT_APP_SUPABASE_ANON_KEY,
-    'Authorization': `Bearer ${process.env.REACT_APP_SUPABASE_ANON_KEY}`,
-  },
-  body: JSON.stringify({ amount: finalAmount, name, email }),
-})
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': process.env.REACT_APP_SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${process.env.REACT_APP_SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify({ amount: finalAmount, name, email }),
+      })
 
       const { clientSecret, error: fnError } = await res.json()
       if (fnError) throw new Error(fnError)
@@ -115,7 +114,7 @@ function DonateForm({ onClose }) {
 
       {/* Preset amounts */}
       <div>
-        <label className="text-xs font-sans text-[#0D4F4F]/50 uppercase tracking-widest mb-2 block">Select Amount</label>
+        <label className="text-xs font-sans text-[#0D4F4F]/80 uppercase tracking-widest mb-2 block">Select Amount</label>
         <div className="grid grid-cols-4 gap-2 mb-2">
           {PRESET_AMOUNTS.map(a => (
             <button
@@ -161,7 +160,7 @@ function DonateForm({ onClose }) {
 
       {/* Name */}
       <div>
-        <label className="text-xs font-sans text-[#0D4F4F]/50 uppercase tracking-widest mb-1.5 block">Full Name</label>
+        <label className="text-xs font-sans text-[#0D4F4F]/80 uppercase tracking-widest mb-1.5 block">Full Name</label>
         <input
           type="text"
           placeholder="John Smith"
@@ -174,7 +173,7 @@ function DonateForm({ onClose }) {
 
       {/* Email */}
       <div>
-        <label className="text-xs font-sans text-[#0D4F4F]/50 uppercase tracking-widest mb-1.5 block">Email</label>
+        <label className="text-xs font-sans text-[#0D4F4F]/80 uppercase tracking-widest mb-1.5 block">Email</label>
         <input
           type="email"
           placeholder="john@email.com"
@@ -187,7 +186,7 @@ function DonateForm({ onClose }) {
 
       {/* Card */}
       <div>
-        <label className="text-xs font-sans text-[#0D4F4F]/50 uppercase tracking-widest mb-1.5 block">Card Details</label>
+        <label className="text-xs font-sans text-[#0D4F4F]/80 uppercase tracking-widest mb-1.5 block">Card Details</label>
         <div className="border-2 border-gray-200 rounded-xl px-4 py-3.5 focus-within:border-[#0D4F4F] transition">
           <CardElement options={CARD_STYLE} />
         </div>

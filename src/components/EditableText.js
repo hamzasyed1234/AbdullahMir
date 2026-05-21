@@ -3,6 +3,22 @@ import { Pencil, Check, X } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../supabaseClient'
 
+// Renders text with \n as actual line breaks
+function WithLineBreaks({ value }) {
+  if (!value) return null
+  const lines = value.split('\n')
+  return (
+    <>
+      {lines.map((line, i) => (
+        <span key={i}>
+          {line}
+          {i < lines.length - 1 && <br />}
+        </span>
+      ))}
+    </>
+  )
+}
+
 export default function EditableText({ page, contentKey, value, onUpdate, className = '', multiline = false }) {
   const { user } = useAuth()
   const [editing, setEditing] = useState(false)
@@ -10,7 +26,6 @@ export default function EditableText({ page, contentKey, value, onUpdate, classN
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
-  // Keep draft in sync when value prop changes
   useEffect(() => {
     setDraft(value)
   }, [value])
@@ -43,8 +58,14 @@ export default function EditableText({ page, contentKey, value, onUpdate, classN
     setError('')
   }
 
-  // Not admin — just render text
-  if (!user) return <span className={className}>{value}</span>
+  // Not admin — render with line breaks
+  if (!user) {
+    return (
+      <span className={className}>
+        {multiline ? <WithLineBreaks value={value} /> : value}
+      </span>
+    )
+  }
 
   if (editing) {
     return (
@@ -84,14 +105,14 @@ export default function EditableText({ page, contentKey, value, onUpdate, classN
     )
   }
 
-  // Admin not editing — show text with pencil on hover
+  // Admin not editing — show text with pencil on hover, with line breaks
   return (
     <span className={`group relative inline-block ${className}`}>
       <span
         className="border-2 border-dashed border-[#0D4F4F]/25 rounded-lg px-2 py-1 block hover:border-[#0D4F4F]/60 hover:bg-[#0D4F4F]/5 transition-all cursor-text"
         onClick={() => { setDraft(value); setEditing(true) }}
       >
-        {value}
+        {multiline ? <WithLineBreaks value={value} /> : value}
         <span className="inline-flex items-center gap-1 ml-2 opacity-0 group-hover:opacity-100 transition bg-[#0D4F4F] text-white text-xs px-2 py-0.5 rounded-md font-sans align-middle">
           <Pencil size={10} /> Edit
         </span>

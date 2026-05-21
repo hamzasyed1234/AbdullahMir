@@ -25,39 +25,95 @@ function PriorityForm({ initial = {}, onSave, onCancel }) {
         <div className="flex flex-col gap-4">
           <div>
             <label className="text-xs font-sans text-gray-500 mb-1 block">Emoji Icon</label>
-            <input
-              type="text"
-              placeholder="e.g. 🏠"
-              value={icon}
-              onChange={e => setIcon(e.target.value)}
-              className="border border-gray-200 rounded-xl px-4 py-3 font-sans focus:outline-none focus:border-[#0D4F4F] w-full text-2xl"
-            />
+            <input type="text" placeholder="e.g. 🏠" value={icon} onChange={e => setIcon(e.target.value)} className="border border-gray-200 rounded-xl px-4 py-3 font-sans focus:outline-none focus:border-[#0D4F4F] w-full text-2xl" />
           </div>
-          <input
-            type="text"
-            placeholder="Title (e.g. Affordable Housing)"
-            value={title}
-            onChange={e => setTitle(e.target.value)}
-            className="border border-gray-200 rounded-xl px-4 py-3 font-sans focus:outline-none focus:border-[#0D4F4F]"
-          />
-          <textarea
-            placeholder="Description…"
-            value={body}
-            onChange={e => setBody(e.target.value)}
-            rows={4}
-            className="border border-gray-200 rounded-xl px-4 py-3 font-sans focus:outline-none focus:border-[#0D4F4F] resize-none"
-          />
+          <input type="text" placeholder="Title (e.g. Affordable Housing)" value={title} onChange={e => setTitle(e.target.value)} className="border border-gray-200 rounded-xl px-4 py-3 font-sans focus:outline-none focus:border-[#0D4F4F]" />
+          <textarea placeholder="Description…" value={body} onChange={e => setBody(e.target.value)} rows={4} className="border border-gray-200 rounded-xl px-4 py-3 font-sans focus:outline-none focus:border-[#0D4F4F] resize-none" />
           <div className="flex gap-3 justify-end mt-2">
             <button onClick={onCancel} className="border border-gray-200 px-5 py-2 rounded-xl font-sans text-sm flex items-center gap-1 hover:bg-gray-50">
               <X size={14} /> Cancel
             </button>
-            <button onClick={handleSave} disabled={saving}
-              className="bg-[#0D4F4F] text-white px-5 py-2 rounded-xl font-sans text-sm flex items-center gap-1 hover:bg-[#1a6b6b] transition disabled:opacity-50">
+            <button onClick={handleSave} disabled={saving} className="bg-[#0D4F4F] text-white px-5 py-2 rounded-xl font-sans text-sm flex items-center gap-1 hover:bg-[#1a6b6b] transition disabled:opacity-50">
               <Check size={14} /> {saving ? 'Saving…' : 'Save'}
             </button>
           </div>
         </div>
       </div>
+    </div>
+  )
+}
+
+// Modal that pops up when a tile is clicked
+function PriorityModal({ priority, onClose }) {
+  // Close on backdrop click
+  const handleBackdrop = (e) => {
+    if (e.target === e.currentTarget) onClose()
+  }
+
+  // Close on Escape key
+  useEffect(() => {
+    const handler = (e) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [onClose])
+
+  // Prevent body scroll while open
+  useEffect(() => {
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = '' }
+  }, [])
+
+  return (
+    <div
+      onClick={handleBackdrop}
+      className="fixed inset-0 z-50 flex items-center justify-center p-6"
+      style={{
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        backdropFilter: 'blur(6px)',
+        WebkitBackdropFilter: 'blur(6px)',
+        animation: 'fadeIn 0.2s ease',
+      }}
+    >
+      <div
+        className="bg-white rounded-3xl shadow-2xl w-full max-w-lg p-10 relative"
+        style={{ animation: 'slideUp 0.25s cubic-bezier(0.16,1,0.3,1)' }}
+      >
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="absolute top-5 right-5 text-[#0D4F4F]/40 hover:text-[#0D4F4F] transition rounded-full p-1 hover:bg-[#0D4F4F]/10"
+        >
+          <X size={20} />
+        </button>
+
+        {/* Icon */}
+        <div className="text-5xl mb-5">{priority.icon}</div>
+
+        {/* Title */}
+        <h2 className="font-serif text-[#0D4F4F] text-3xl font-bold mb-4 leading-tight">
+          {priority.title}
+        </h2>
+
+        {/* Divider */}
+        <div className="h-1 w-12 bg-[#0D4F4F] rounded-full mb-6" />
+
+        {/* Body */}
+        <p className="font-sans text-[#0D4F4F]/75 text-base leading-relaxed">
+          {priority.body}
+        </p>
+      </div>
+
+      {/* Keyframe animations injected once */}
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
+        @keyframes slideUp {
+          from { opacity: 0; transform: translateY(24px) scale(0.97); }
+          to   { opacity: 1; transform: translateY(0)    scale(1);    }
+        }
+      `}</style>
     </div>
   )
 }
@@ -68,6 +124,7 @@ export default function Priorities() {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editingItem, setEditingItem] = useState(null)
+  const [selectedPriority, setSelectedPriority] = useState(null)
 
   useEffect(() => { fetchPriorities() }, [])
 
@@ -97,7 +154,7 @@ export default function Priorities() {
   return (
     <div className="pt-20 min-h-screen bg-[#FAF7F2]">
 
-      {/* Header — cream bg, teal text, line underneath */}
+      {/* Header */}
       <div className="bg-[#FAF7F2] px-10 md:px-20 pt-16 pb-12 flex flex-col items-center text-center">
         <span className="text-[#0D4F4F]/40 text-xs uppercase tracking-widest font-sans">What Matters</span>
         <h1 className="font-serif text-[#0D4F4F] text-5xl md:text-6xl font-bold mt-2 mb-4">Priorities</h1>
@@ -121,18 +178,36 @@ export default function Priorities() {
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {priorities.map((p) => (
-              <div key={p.id} className="bg-white rounded-2xl p-8 shadow-sm border border-[#0D4F4F]/10 hover:shadow-md transition flex flex-col">
+              <div
+                key={p.id}
+                onClick={() => !user && setSelectedPriority(p)}
+                className={`bg-white rounded-2xl p-8 shadow-sm border border-[#0D4F4F]/10 hover:shadow-md transition flex flex-col group ${!user ? 'cursor-pointer hover:-translate-y-1 hover:border-[#0D4F4F]/30' : ''}`}
+                style={{ transition: 'box-shadow 0.2s, transform 0.2s, border-color 0.2s' }}
+              >
                 <div className="text-3xl mb-4">{p.icon}</div>
                 <h3 className="font-serif text-[#0D4F4F] text-xl font-bold mb-3">{p.title}</h3>
-                <p className="font-sans text-[#0D4F4F]/70 text-sm leading-relaxed flex-1">{p.body}</p>
+                <p className="font-sans text-[#0D4F4F]/70 text-sm leading-relaxed flex-1 line-clamp-3">{p.body}</p>
+
+                {/* Read more hint — only for non-admin */}
+                {!user && (
+                  <p className="text-[#0D4F4F]/40 text-xs font-sans mt-4 group-hover:text-[#0D4F4F]/70 transition">
+                    Tap to read more →
+                  </p>
+                )}
+
+                {/* Admin controls */}
                 {user && (
                   <div className="flex gap-2 mt-5 pt-4 border-t border-[#0D4F4F]/10">
-                    <button onClick={() => { setEditingItem(p); setShowForm(true) }}
-                      className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg border border-[#0D4F4F]/20 text-[#0D4F4F] font-sans hover:bg-[#0D4F4F]/5 transition">
+                    <button
+                      onClick={() => { setEditingItem(p); setShowForm(true) }}
+                      className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg border border-[#0D4F4F]/20 text-[#0D4F4F] font-sans hover:bg-[#0D4F4F]/5 transition"
+                    >
                       <Pencil size={11} /> Edit
                     </button>
-                    <button onClick={() => handleDelete(p.id)}
-                      className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg border border-red-200 text-red-400 font-sans hover:bg-red-50 transition">
+                    <button
+                      onClick={() => handleDelete(p.id)}
+                      className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg border border-red-200 text-red-400 font-sans hover:bg-red-50 transition"
+                    >
                       <Trash2 size={11} /> Delete
                     </button>
                   </div>
@@ -143,6 +218,15 @@ export default function Priorities() {
         )}
       </div>
 
+      {/* Priority detail modal */}
+      {selectedPriority && (
+        <PriorityModal
+          priority={selectedPriority}
+          onClose={() => setSelectedPriority(null)}
+        />
+      )}
+
+      {/* Admin add/edit form */}
       {showForm && (
         <PriorityForm
           initial={editingItem || {}}
