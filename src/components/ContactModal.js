@@ -83,7 +83,7 @@ function ContactForm({ onClose }) {
         </div>
         <h2 className="font-serif text-[#0D4F4F] text-3xl font-bold">Get in Touch</h2>
         <p className="font-sans text-[#0D4F4F]/60 text-sm mt-1">
-          Have a question or concern? We'd love to hear from you.
+          Have a question or concern? I'd love to hear from you.
         </p>
       </div>
 
@@ -91,7 +91,7 @@ function ContactForm({ onClose }) {
       <div className="flex items-center gap-3 bg-[#0D4F4F]/8 border border-[#0D4F4F]/15 rounded-xl px-4 py-3">
         <Phone size={16} className="text-[#0D4F4F] flex-shrink-0" />
         <p className="font-sans text-[#0D4F4F]/75 text-sm">
-          You can also call or text us at{' '}
+          You can also call or text me at{' '}
           <a
             href="tel:+12899923647"
             className="font-bold text-[#0D4F4F] hover:underline"

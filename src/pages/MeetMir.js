@@ -4,19 +4,37 @@ import EditableText from '../components/EditableText'
 import { useAuth } from '../context/AuthContext'
 import { Pencil, Plus, Trash2, Check, X } from 'lucide-react'
 
-const DEFAULT_BLOCK_1 = `I have proudly called the Rougemount community home for the past decade, and I've spent years working alongside neighbours to make our community stronger.
+const DEFAULT_BLOCK_1 = `For more than a decade, I have called the Rougemount neighbourhood in Ward 1 home, where I have been actively involved as a community organizer and advocate for residents both in my community and across Pickering.
 
-I co-founded the Rougemount Community and Recreation Association, served on the Pickering Public Library Board, helped iTrust Community Centre find a permanent home on Kingston Road, and led the fight against sprawl development during the Greenbelt scandal as co-chair of Stop Sprawl Durham.`
+Much of my work has focused on protecting the things that make Pickering such a special place to live, from our neighbourhood connections to our natural spaces and farmland.
 
-const DEFAULT_BLOCK_2 = `Alongside my community work, I've spent over a decade in increasingly senior leadership positions as a federal public servant, gaining a deep understanding of how government policy is built, how public institutions deliver for people, and how to navigate the complex systems that shape residents' daily lives.`
+As co-chair of Stop Sprawl Durham, I worked with residents across our region to push back against plans that would have opened protected Greenbelt lands in Pickering to development. Together, we stood up for responsible planning, protecting thousands of acres of farmland and natural spaces so that current residents and future generations can continue to enjoy them.
 
-const DEFAULT_BLOCK_3 = `I'm running for city council because I believe Pickering should be a place you can afford to live, feel safe, and be proud of at every stage of life. That means strong, healthy neighbourhoods where families can put down roots, seniors can grow old close to the people they love, and kids have parks and programs to thrive.
+Working alongside residents across Durham Region, together we helped restore nearly 5,000 acres of Pickering land back into the Greenbelt, protecting farmland and green space that belongs to the community. By protecting these lands, we also helped avoid the kind of sprawling development that often leads to higher infrastructure costs and increased property taxes for residents.`
 
-This election isn't about me — it's about you and the community you want to build. Over the next 6 months, I will be visiting every household in this ward to talk to you directly.
+const DEFAULT_BLOCK_2 = `As a member of the board of Land Over Landings, I worked with residents and community partners to advocate for responsible land-use planning that protects farmland and ensures that growth in Pickering is managed in a way that supports our community.
 
-I want to hear from you: votemirward1@gmail.com or 289-992-3647.
+I also joined residents advocating against plans for an airport in North Pickering that would have brought major environmental impacts, noise, and the loss of valuable farmland.
 
-We can build a stronger city together. I'm here to work for you!`
+At the same time, I have always believed that building a strong city begins with building strong communities.
+
+I am a co-founder and vice president of the Rougemount Community and Recreation Association, where I have helped organize neighbourhood events that bring residents together, including Party in the Park, the Fall Corn Roast, and Christmas Carols in the Park. Events like these help neighbours connect and strengthen the sense of community that makes Pickering such a great place to live.`
+
+const DEFAULT_BLOCK_3 = `Through the association, I have also helped organize community information sessions on topics such as fire safety and police safety, and worked with residents to advocate with City Hall for improvements to Rouge Valley Park and traffic-calming measures in our neighbourhood.
+
+I have also been proud to support one of Pickering's most important public institutions through my work on the Pickering Public Library Board. During my time on the board, I supported efforts to expand access to library services and strengthen the role libraries play in our community.
+
+Initiatives such as Ovee were launched during this time, bringing library services directly into neighbourhoods across Pickering, including several stops in Ward 1. Programs like this help connect more residents with books, learning opportunities, and community resources.
+
+Supporting community organizations has also been an important part of my work. As an advisor to the iTrust Community Centre, I helped the organization secure a permanent home at 469 Kingston Road. I also worked with the City to ensure the necessary permits and approvals were in place so the community could have a dedicated space for prayer, meetings, and local programs.`
+
+const DEFAULT_BLOCK_4 = `I have also helped bring people together through sports and cultural events. In 2025 and 2026, I organized the Pickering Classic Cricket Tournament, the first event of its kind in the city, raising funds for the Pickering Food Bank while bringing residents together from across our diverse community.
+
+Alongside my community work, I have spent more than a decade serving Canadians as a federal public servant. Through that work I have gained valuable experience in how government policy is developed and implemented, and how public institutions can navigate complex challenges to deliver meaningful results for people.
+
+Everything I have done over the past decade has been driven by the same belief: strong communities are built when people come together, stand up for their neighbours, and work collaboratively to shape the future of their city.
+
+That is the spirit I hope to bring to City Council!`
 
 function CommunityForm({ initial = {}, onSave, onCancel }) {
   const [role, setRole] = useState(initial.role || '')
@@ -64,12 +82,14 @@ export default function MeetMir() {
     block_1: DEFAULT_BLOCK_1,
     block_2: DEFAULT_BLOCK_2,
     block_3: DEFAULT_BLOCK_3,
+    block_4: DEFAULT_BLOCK_4,
   })
 
   const [photo1, setPhoto1] = useState('/DSCF4950.jpg')
-  const [photo2, setPhoto2] = useState('/DSCF5112.jpg')
-  const [uploadingPhoto1, setUploadingPhoto1] = useState(false)
-  const [uploadingPhoto2, setUploadingPhoto2] = useState(false)
+  const [photo2, setPhoto2] = useState('/DSCF5109.jpg')
+  const [photo3, setPhoto3] = useState('/DSCF5002.jpg')
+  const [photo4, setPhoto4] = useState('/DSCF5028.jpg')
+  const [uploading, setUploading] = useState({ p1: false, p2: false, p3: false, p4: false })
 
   const [community, setCommunity] = useState([])
   const [showForm, setShowForm] = useState(false)
@@ -81,8 +101,10 @@ export default function MeetMir() {
         const map = {}
         data.forEach(r => { map[r.key] = r.value })
         setContent(prev => ({ ...prev, ...map }))
-        if (map.photo_url) setPhoto1(map.photo_url)
+        if (map.photo_url)  setPhoto1(map.photo_url)
         if (map.photo2_url) setPhoto2(map.photo2_url)
+        if (map.photo3_url) setPhoto3(map.photo3_url)
+        if (map.photo4_url) setPhoto4(map.photo4_url)
       }
     })
     fetchCommunity()
@@ -93,10 +115,10 @@ export default function MeetMir() {
     setCommunity(data || [])
   }
 
-  const makePhotoUploader = (photoKey, setPhoto, setUploading) => async (e) => {
+  const makePhotoUploader = (photoKey, setPhoto, uploadKey) => async (e) => {
     const file = e.target.files[0]
     if (!file) return
-    setUploading(true)
+    setUploading(u => ({ ...u, [uploadKey]: true }))
     const fileName = `meet-photo-${photoKey}-${Date.now()}.${file.name.split('.').pop()}`
     const { error } = await supabase.storage.from('images').upload(fileName, file, { upsert: true })
     if (!error) {
@@ -107,7 +129,7 @@ export default function MeetMir() {
         { onConflict: 'page,key' }
       )
     }
-    setUploading(false)
+    setUploading(u => ({ ...u, [uploadKey]: false }))
   }
 
   const handleSave = async (fields) => {
@@ -132,6 +154,38 @@ export default function MeetMir() {
     return src.replace(/\.(jpg|jpeg|png)$/i, '.webp')
   }
 
+  // Photo column — scales with text height naturally
+  const PhotoCol = ({ photo, uploadKey, photoKey, setPhoto, objPos = 'center top', eager = false }) => (
+    <div className="w-full md:w-1/2 flex-shrink-0 relative">
+      <picture>
+        {toWebP(photo) && <source srcSet={toWebP(photo)} type="image/webp" />}
+        <img
+          src={photo}
+          alt="Abdullah Mir"
+          className="w-full h-full object-cover rounded-2xl shadow-xl"
+          style={{ objectPosition: objPos, display: 'block' }}
+          loading={eager ? 'eager' : 'lazy'}
+          decoding="async"
+        />
+      </picture>
+      {user && (
+        <label className="absolute bottom-4 right-4 bg-[#0D4F4F] text-[#FAF7F2] px-3 py-2 rounded-xl text-xs font-sans flex items-center gap-1 cursor-pointer hover:bg-[#1a6b6b] transition z-10">
+          <Pencil size={12} /> {uploading[uploadKey] ? 'Uploading…' : 'Change Photo'}
+          <input type="file" accept="image/*" className="hidden" onChange={makePhotoUploader(photoKey, setPhoto, uploadKey)} />
+        </label>
+      )}
+    </div>
+  )
+
+  // Text column
+  const TextCol = ({ contentKey, value, onUpdate }) => (
+    <div className="w-full md:w-1/2 flex items-center py-8 px-0 md:px-12">
+      <div className="font-sans text-[#0D4F4F]/80 text-base leading-relaxed w-full">
+        <EditableText page="meet" contentKey={contentKey} value={value} onUpdate={onUpdate} multiline className="block" />
+      </div>
+    </div>
+  )
+
   return (
     <div className="min-h-screen bg-[#FAF7F2]" style={{ paddingTop: '64px' }}>
 
@@ -142,71 +196,78 @@ export default function MeetMir() {
         <div className="h-1 w-16 bg-[#0D4F4F] rounded-full" />
       </div>
 
-      {/* ── ROW 1: Photo left, Text right ── */}
-      <div className="max-w-6xl mx-auto px-6 py-16 flex flex-col md:flex-row gap-12 items-stretch">
-        <div className="relative flex-shrink-0 w-full md:w-1/2 min-h-[500px]">
-          <picture>
-            {toWebP(photo1) && <source srcSet={toWebP(photo1)} type="image/webp" />}
-            <img
-              src={photo1}
-              alt="Abdullah Mir"
-              className="absolute inset-0 w-full h-full object-cover object-top rounded-2xl shadow-2xl"
-              loading="eager"
-              decoding="async"
-            />
-          </picture>
-          {user && (
-            <label className="absolute bottom-4 right-4 bg-[#0D4F4F] text-[#FAF7F2] px-3 py-2 rounded-xl text-xs font-sans flex items-center gap-1 cursor-pointer hover:bg-[#1a6b6b] transition z-10">
-              <Pencil size={12} /> {uploadingPhoto1 ? 'Uploading…' : 'Change Photo'}
-              <input type="file" accept="image/*" className="hidden" onChange={makePhotoUploader('photo_url', setPhoto1, setUploadingPhoto1)} />
-            </label>
-          )}
+      <div className="max-w-6xl mx-auto px-6 mt-12 flex flex-col gap-16">
+
+        {/* ROW 1: Photo left, Text right */}
+        <div className="flex flex-col md:flex-row md:items-stretch gap-8 md:gap-12">
+          <PhotoCol photo={photo1} uploadKey="p1" photoKey="photo_url" setPhoto={setPhoto1} objPos="center top" eager={true} />
+          <TextCol contentKey="block_1" value={content.block_1} onUpdate={v => setContent(c => ({ ...c, block_1: v }))} />
         </div>
-        <div className="flex-1 flex items-center">
-          <div className="font-sans text-[#0D4F4F]/80 text-base leading-relaxed w-full">
-            <EditableText page="meet" contentKey="block_1" value={content.block_1} onUpdate={v => setContent(c => ({ ...c, block_1: v }))} multiline className="block" />
+
+        {/* ROW 2: Text left, Photo right */}
+        <div className="flex flex-col md:flex-row md:items-stretch gap-8 md:gap-12">
+          <div className="w-full md:w-1/2 order-2 md:order-1 flex items-center py-8 px-0 md:px-12">
+            <div className="font-sans text-[#0D4F4F]/80 text-base leading-relaxed w-full">
+              <EditableText page="meet" contentKey="block_2" value={content.block_2} onUpdate={v => setContent(c => ({ ...c, block_2: v }))} multiline className="block" />
+            </div>
+          </div>
+          <div className="w-full md:w-1/2 flex-shrink-0 relative order-1 md:order-2">
+            <picture>
+              {toWebP(photo2) && <source srcSet={toWebP(photo2)} type="image/webp" />}
+              <img src={photo2} alt="Abdullah Mir" className="w-full h-full object-cover object-top rounded-2xl shadow-xl" style={{ display: 'block' }} loading="lazy" decoding="async" />
+            </picture>
+            {user && (
+              <label className="absolute bottom-4 right-4 bg-[#0D4F4F] text-[#FAF7F2] px-3 py-2 rounded-xl text-xs font-sans flex items-center gap-1 cursor-pointer hover:bg-[#1a6b6b] transition z-10">
+                <Pencil size={12} /> {uploading.p2 ? 'Uploading…' : 'Change Photo'}
+                <input type="file" accept="image/*" className="hidden" onChange={makePhotoUploader('photo2_url', setPhoto2, 'p2')} />
+              </label>
+            )}
           </div>
         </div>
-      </div>
 
-      {/* ── ROW 2: Text left, Photo right ── */}
-      <div className="max-w-6xl mx-auto px-6 py-16 flex flex-col md:flex-row gap-12 items-stretch">
-        <div className="flex-1 flex items-center order-2 md:order-1">
-          <div className="font-sans text-[#0D4F4F]/80 text-base leading-relaxed w-full">
-            <EditableText page="meet" contentKey="block_2" value={content.block_2} onUpdate={v => setContent(c => ({ ...c, block_2: v }))} multiline className="block" />
+        {/* ROW 3: Photo left, Text right */}
+        <div className="flex flex-col md:flex-row md:items-stretch gap-8 md:gap-12">
+          <div className="w-full md:w-1/2 flex-shrink-0 relative">
+            <picture>
+              {toWebP(photo3) && <source srcSet={toWebP(photo3)} type="image/webp" />}
+              <img src={photo3} alt="Abdullah Mir" className="w-full h-full object-cover object-top rounded-2xl shadow-xl" style={{ display: 'block' }} loading="lazy" decoding="async" />
+            </picture>
+            {user && (
+              <label className="absolute bottom-4 right-4 bg-[#0D4F4F] text-[#FAF7F2] px-3 py-2 rounded-xl text-xs font-sans flex items-center gap-1 cursor-pointer hover:bg-[#1a6b6b] transition z-10">
+                <Pencil size={12} /> {uploading.p3 ? 'Uploading…' : 'Change Photo'}
+                <input type="file" accept="image/*" className="hidden" onChange={makePhotoUploader('photo3_url', setPhoto3, 'p3')} />
+              </label>
+            )}
+          </div>
+          <TextCol contentKey="block_3" value={content.block_3} onUpdate={v => setContent(c => ({ ...c, block_3: v }))} />
+        </div>
+
+        {/* ROW 4: Text left, Photo right */}
+        <div className="flex flex-col md:flex-row md:items-stretch gap-8 md:gap-12">
+          <div className="w-full md:w-1/2 order-2 md:order-1 flex items-center py-8 px-0 md:px-12">
+            <div className="font-sans text-[#0D4F4F]/80 text-base leading-relaxed w-full">
+              <EditableText page="meet" contentKey="block_4" value={content.block_4} onUpdate={v => setContent(c => ({ ...c, block_4: v }))} multiline className="block" />
+            </div>
+          </div>
+          <div className="w-full md:w-1/2 flex-shrink-0 relative order-1 md:order-2">
+            <picture>
+              {toWebP(photo4) && <source srcSet={toWebP(photo4)} type="image/webp" />}
+              {/* objectPosition '30% center' keeps the guy fully in frame — adjust % to shift left/right */}
+              <img src={photo4} alt="Abdullah Mir" className="w-full h-full object-cover rounded-2xl shadow-xl" style={{ objectPosition: '65% center', display: 'block' }} loading="lazy" decoding="async" />
+            </picture>
+            {user && (
+              <label className="absolute bottom-4 right-4 bg-[#0D4F4F] text-[#FAF7F2] px-3 py-2 rounded-xl text-xs font-sans flex items-center gap-1 cursor-pointer hover:bg-[#1a6b6b] transition z-10">
+                <Pencil size={12} /> {uploading.p4 ? 'Uploading…' : 'Change Photo'}
+                <input type="file" accept="image/*" className="hidden" onChange={makePhotoUploader('photo4_url', setPhoto4, 'p4')} />
+              </label>
+            )}
           </div>
         </div>
-        <div className="relative flex-shrink-0 w-full md:w-1/2 min-h-[500px] order-1 md:order-2">
-          <picture>
-            {toWebP(photo2) && <source srcSet={toWebP(photo2)} type="image/webp" />}
-            <img
-              src={photo2}
-              alt="Abdullah Mir"
-              className="absolute inset-0 w-full h-full object-cover object-top rounded-2xl shadow-2xl"
-              loading="lazy"
-              decoding="async"
-            />
-          </picture>
-          {user && (
-            <label className="absolute bottom-4 right-4 bg-[#0D4F4F] text-[#FAF7F2] px-3 py-2 rounded-xl text-xs font-sans flex items-center gap-1 cursor-pointer hover:bg-[#1a6b6b] transition z-10">
-              <Pencil size={12} /> {uploadingPhoto2 ? 'Uploading…' : 'Change Photo'}
-              <input type="file" accept="image/*" className="hidden" onChange={makePhotoUploader('photo2_url', setPhoto2, setUploadingPhoto2)} />
-            </label>
-          )}
-        </div>
+
       </div>
 
-      {/* ── ROW 3: Why I'm Running — cream bg, no subtitle ── */}
-      <div className="bg-[#FAF7F2]">
-        <div className="max-w-4xl mx-auto px-6 py-20 text-center">
-          <div className="font-sans text-[#0D4F4F]/80 text-lg leading-relaxed">
-            <EditableText page="meet" contentKey="block_3" value={content.block_3} onUpdate={v => setContent(c => ({ ...c, block_3: v }))} multiline className="block" />
-          </div>
-        </div>
-      </div>
-
-      {/* ── Community Involvement — teal bg ── */}
-      <div className="bg-[#0D4F4F] py-16 px-6">
+      {/* ── Community — teal bg ── */}
+      <div className="bg-[#0D4F4F] py-16 px-6 mt-16">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between mb-10">
             <h2 className="font-serif text-[#FAF7F2] text-3xl font-bold">Community</h2>
