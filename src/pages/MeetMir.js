@@ -85,7 +85,7 @@ export default function MeetMir() {
     block_4: DEFAULT_BLOCK_4,
   })
 
-  const [photo1, setPhoto1] = useState('/DSCF4950.jpg')
+  const [photo1, setPhoto1] = useState('/DSCF4885-3.jpg')
   const [photo2, setPhoto2] = useState('/DSCF5109.jpg')
   const [photo3, setPhoto3] = useState('/DSCF5002.jpg')
   const [photo4, setPhoto4] = useState('/DSCF5028.jpg')
@@ -151,23 +151,41 @@ export default function MeetMir() {
 
   const toWebP = (src) => {
     if (!src || src.startsWith('http')) return null
-    return src.replace(/\.(jpg|jpeg|png)$/i, '.webp')
+    const [path, query] = src.split('?')
+    const webp = path.replace(/\.(jpg|jpeg|png)$/i, '.webp')
+    return query ? `${webp}?${query}` : webp
   }
 
-  // Photo column — scales with text height naturally
-  const PhotoCol = ({ photo, uploadKey, photoKey, setPhoto, objPos = 'center top', eager = false }) => (
-    <div className="w-full md:w-1/2 flex-shrink-0 relative">
-      <picture>
-        {toWebP(photo) && <source srcSet={toWebP(photo)} type="image/webp" />}
-        <img
-          src={photo}
-          alt="Abdullah Mir"
-          className="w-full h-full object-cover rounded-2xl shadow-xl"
-          style={{ objectPosition: objPos, display: 'block' }}
-          loading={eager ? 'eager' : 'lazy'}
-          decoding="async"
-        />
-      </picture>
+  // Photo column — fills exact height of sibling text col using absolute fill inside self-stretch
+  const PhotoCol = ({ photo, uploadKey, photoKey, setPhoto, objPos = 'center top', eager = false, useAspectRatio = false }) => (
+    <div className="w-full md:w-1/2 flex-shrink-0 self-stretch relative min-h-[350px]">
+      {useAspectRatio ? (
+        <div className="w-full" style={{ aspectRatio: '3/4' }}>
+          <picture>
+            {toWebP(photo) && <source srcSet={toWebP(photo)} type="image/webp" />}
+            <img
+              src={photo}
+              alt="Abdullah Mir"
+              className="w-full h-full object-cover rounded-2xl shadow-xl"
+              style={{ objectPosition: objPos }}
+              loading={eager ? 'eager' : 'lazy'}
+              decoding="async"
+            />
+          </picture>
+        </div>
+      ) : (
+        <picture>
+          {toWebP(photo) && <source srcSet={toWebP(photo)} type="image/webp" />}
+          <img
+            src={photo}
+            alt="Abdullah Mir"
+            className="absolute inset-0 w-full h-full object-cover rounded-2xl shadow-xl"
+            style={{ objectPosition: objPos }}
+            loading={eager ? 'eager' : 'lazy'}
+            decoding="async"
+          />
+        </picture>
+      )}
       {user && (
         <label className="absolute bottom-4 right-4 bg-[#0D4F4F] text-[#FAF7F2] px-3 py-2 rounded-xl text-xs font-sans flex items-center gap-1 cursor-pointer hover:bg-[#1a6b6b] transition z-10">
           <Pencil size={12} /> {uploading[uploadKey] ? 'Uploading…' : 'Change Photo'}
@@ -200,7 +218,7 @@ export default function MeetMir() {
 
         {/* ROW 1: Photo left, Text right */}
         <div className="flex flex-col md:flex-row md:items-stretch gap-8 md:gap-12">
-          <PhotoCol photo={photo1} uploadKey="p1" photoKey="photo_url" setPhoto={setPhoto1} objPos="center top" eager={true} />
+          <PhotoCol photo={photo1} uploadKey="p1" photoKey="photo_url" setPhoto={setPhoto1} objPos="center top" eager={true} useAspectRatio={true} />
           <TextCol contentKey="block_1" value={content.block_1} onUpdate={v => setContent(c => ({ ...c, block_1: v }))} />
         </div>
 
@@ -211,10 +229,10 @@ export default function MeetMir() {
               <EditableText page="meet" contentKey="block_2" value={content.block_2} onUpdate={v => setContent(c => ({ ...c, block_2: v }))} multiline className="block" />
             </div>
           </div>
-          <div className="w-full md:w-1/2 flex-shrink-0 relative order-1 md:order-2">
+          <div className="w-full md:w-1/2 flex-shrink-0 self-stretch relative min-h-[350px] order-1 md:order-2">
             <picture>
               {toWebP(photo2) && <source srcSet={toWebP(photo2)} type="image/webp" />}
-              <img src={photo2} alt="Abdullah Mir" className="w-full h-full object-cover object-top rounded-2xl shadow-xl" style={{ display: 'block' }} loading="lazy" decoding="async" />
+              <img src={photo2} alt="Abdullah Mir" className="absolute inset-0 w-full h-full object-cover object-top rounded-2xl shadow-xl" loading="lazy" decoding="async" />
             </picture>
             {user && (
               <label className="absolute bottom-4 right-4 bg-[#0D4F4F] text-[#FAF7F2] px-3 py-2 rounded-xl text-xs font-sans flex items-center gap-1 cursor-pointer hover:bg-[#1a6b6b] transition z-10">
@@ -227,10 +245,10 @@ export default function MeetMir() {
 
         {/* ROW 3: Photo left, Text right */}
         <div className="flex flex-col md:flex-row md:items-stretch gap-8 md:gap-12">
-          <div className="w-full md:w-1/2 flex-shrink-0 relative">
+          <div className="w-full md:w-1/2 flex-shrink-0 self-stretch relative min-h-[350px]">
             <picture>
               {toWebP(photo3) && <source srcSet={toWebP(photo3)} type="image/webp" />}
-              <img src={photo3} alt="Abdullah Mir" className="w-full h-full object-cover object-top rounded-2xl shadow-xl" style={{ display: 'block' }} loading="lazy" decoding="async" />
+              <img src={photo3} alt="Abdullah Mir" className="absolute inset-0 w-full h-full object-cover object-top rounded-2xl shadow-xl" loading="lazy" decoding="async" />
             </picture>
             {user && (
               <label className="absolute bottom-4 right-4 bg-[#0D4F4F] text-[#FAF7F2] px-3 py-2 rounded-xl text-xs font-sans flex items-center gap-1 cursor-pointer hover:bg-[#1a6b6b] transition z-10">
@@ -249,11 +267,10 @@ export default function MeetMir() {
               <EditableText page="meet" contentKey="block_4" value={content.block_4} onUpdate={v => setContent(c => ({ ...c, block_4: v }))} multiline className="block" />
             </div>
           </div>
-          <div className="w-full md:w-1/2 flex-shrink-0 relative order-1 md:order-2">
+          <div className="w-full md:w-1/2 flex-shrink-0 self-stretch relative min-h-[350px] order-1 md:order-2">
             <picture>
               {toWebP(photo4) && <source srcSet={toWebP(photo4)} type="image/webp" />}
-              {/* objectPosition '30% center' keeps the guy fully in frame — adjust % to shift left/right */}
-              <img src={photo4} alt="Abdullah Mir" className="w-full h-full object-cover rounded-2xl shadow-xl" style={{ objectPosition: '65% center', display: 'block' }} loading="lazy" decoding="async" />
+              <img src={photo4} alt="Abdullah Mir" className="absolute inset-0 w-full h-full object-cover rounded-2xl shadow-xl" style={{ objectPosition: '65% center' }} loading="lazy" decoding="async" />
             </picture>
             {user && (
               <label className="absolute bottom-4 right-4 bg-[#0D4F4F] text-[#FAF7F2] px-3 py-2 rounded-xl text-xs font-sans flex items-center gap-1 cursor-pointer hover:bg-[#1a6b6b] transition z-10">

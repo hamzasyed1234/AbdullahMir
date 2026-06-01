@@ -9,6 +9,7 @@ import ScrollToTop from './components/ScrollToTop'
 const Home = lazy(() => import('./pages/Home'))
 const MeetMir = lazy(() => import('./pages/MeetMir'))
 const Priorities = lazy(() => import('./pages/Priorities'))
+const Platform = lazy(() => import('./pages/Platform'))
 const Articles = lazy(() => import('./pages/Articles'))
 const Press = lazy(() => import('./pages/Press'))
 const AdminLogin = lazy(() => import('./pages/AdminLogin'))
@@ -25,6 +26,7 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/meet-mir" element={<MeetMir />} />
             <Route path="/priorities" element={<Priorities />} />
+            <Route path="/platform" element={<Platform />} />
             <Route path="/articles" element={<Articles />} />
             <Route path="/press" element={<Press />} />
             <Route path="/admin-login" element={<AdminLogin />} />

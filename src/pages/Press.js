@@ -43,7 +43,6 @@ function PressForm({ initial = {}, onSave, onCancel }) {
       setPreviewImage(preview.image)
       setFetched(true)
     } else {
-      // Even if preview fails, still mark as fetched so fields show
       setFetched(true)
     }
     setFetching(false)
@@ -111,7 +110,6 @@ function PressForm({ initial = {}, onSave, onCancel }) {
                   <span className="text-sm font-sans">No image — upload one below</span>
                 </div>
               )}
-              {/* Manual upload button */}
               <label className="flex items-center gap-2 cursor-pointer bg-[#0D4F4F]/5 hover:bg-[#0D4F4F]/10 border border-[#0D4F4F]/20 text-[#0D4F4F] px-4 py-2 rounded-xl font-sans text-sm transition w-fit">
                 {uploadingImage ? <Loader size={14} className="animate-spin" /> : <ImagePlus size={14} />}
                 {uploadingImage ? 'Uploading…' : 'Upload Image Manually'}
@@ -155,7 +153,7 @@ export default function Press() {
   const [editingItem, setEditingItem] = useState(null)
 
   const fetchPress = async () => {
-    const { data } = await supabase.from('press').select('*').order('sort_order').order('published_at', { ascending: false })
+    const { data } = await supabase.from('press').select('*').order('published_at', { ascending: false })
     setItems(data || [])
     setLoading(false)
   }
@@ -166,7 +164,7 @@ export default function Press() {
     if (editingItem) {
       await supabase.from('press').update(fields).eq('id', editingItem.id)
     } else {
-      await supabase.from('press').insert([{ ...fields, sort_order: items.length }])
+      await supabase.from('press').insert([{ ...fields }])
     }
     setShowForm(false)
     setEditingItem(null)

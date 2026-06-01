@@ -41,6 +41,14 @@ function YouTubeIcon() {
 }
 
 export default function Footer() {
+  const links = [
+    { to: '/', label: 'Home' },
+    { to: '/meet-mir', label: 'About Me' },
+    { to: '/priorities', label: 'Priorities' },
+    { to: '/platform', label: 'Platform' },
+    { to: '/press', label: 'Press' },
+  ]
+
   return (
     <footer className="bg-[#0D4F4F] text-cream/80 py-12 mt-20">
       <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-8">
@@ -49,11 +57,9 @@ export default function Footer() {
           <p className="text-sm">Candidate for Ward 1 City Councillor<br />Pickering, Ontario</p>
         </div>
         <div className="flex flex-col gap-2 text-sm">
-          <Link to="/" className="hover:text-cream transition">Home</Link>
-          <Link to="/meet-mir" className="hover:text-cream transition">Meet Mir</Link>
-          <Link to="/priorities" className="hover:text-cream transition">Priorities</Link>
-          <Link to="/articles" className="hover:text-cream transition">Articles</Link>
-          <Link to="/press" className="hover:text-cream transition">Press</Link>
+          {links.map(l => (
+            <Link key={l.to} to={l.to} className="hover:text-cream transition">{l.label}</Link>
+          ))}
         </div>
         <div>
           <p className="text-sm mb-3">Follow Abdullah</p>
@@ -73,9 +79,8 @@ export default function Footer() {
             <a href="https://www.youtube.com/@theabdullahmir" target="_blank" rel="noreferrer" className="hover:text-cream transition opacity-70 hover:opacity-100" aria-label="YouTube">
               <YouTubeIcon />
             </a>
-
           </div>
-          <p className="text-xs mt-4 opacity-50">© {new Date().getFullYear()} Abdullah Mir. All rights reserved.</p>
+          <p className="text-xs mt-4 opacity-50">© {new Date().getFullYear()} HashKeys. All rights reserved.</p>
         </div>
       </div>
     </footer>

@@ -15,6 +15,7 @@ export default function Navbar() {
     { to: '/', label: 'Home' },
     { to: '/meet-mir', label: 'About Me' },
     { to: '/priorities', label: 'Priorities' },
+    { to: '/platform', label: 'Platform' },
    // { to: '/articles', label: 'Articles' },
     { to: '/press', label: 'Press' },
   ]
@@ -46,7 +47,6 @@ export default function Navbar() {
               </Link>
             ))}
 
-            {/* Contact button */}
             <button
               onClick={() => setShowContact(true)}
               className="bg-[#FAF7F2]/15 text-[#FAF7F2] px-5 py-2 rounded-full font-sans font-bold text-sm hover:bg-[#FAF7F2]/25 transition shadow-sm border border-[#FAF7F2]/20 ml-2"
@@ -54,7 +54,6 @@ export default function Navbar() {
               Contact
             </button>
 
-            {/* Donate button */}
             <button
               onClick={() => setShowDonate(true)}
               className="bg-[#FAF7F2] text-[#0D4F4F] px-5 py-2 rounded-full font-sans font-bold text-sm hover:bg-white transition shadow-sm"
@@ -62,7 +61,6 @@ export default function Navbar() {
               Donate
             </button>
 
-            {/* Admin link */}
             {!user && (
               <Link
                 to="/admin-login"
@@ -94,7 +92,6 @@ export default function Navbar() {
               </Link>
             ))}
 
-            {/* Contact button (mobile) */}
             <button
               onClick={() => { setShowContact(true); setOpen(false) }}
               className="bg-[#FAF7F2]/15 text-[#FAF7F2] px-5 py-2 rounded-full font-sans font-bold text-sm text-center hover:bg-[#FAF7F2]/25 transition border border-[#FAF7F2]/20"
@@ -102,7 +99,6 @@ export default function Navbar() {
               Contact
             </button>
 
-            {/* Donate button (mobile) */}
             <button
               onClick={() => { setShowDonate(true); setOpen(false) }}
               className="bg-[#FAF7F2] text-[#0D4F4F] px-5 py-2 rounded-full font-sans font-bold text-sm text-center hover:bg-white transition"
@@ -119,10 +115,7 @@ export default function Navbar() {
         )}
       </nav>
 
-      {/* Donate Modal */}
       {showDonate && <DonateModal onClose={() => setShowDonate(false)} />}
-
-      {/* Contact Modal */}
       {showContact && <ContactModal onClose={() => setShowContact(false)} />}
     </>
   )
