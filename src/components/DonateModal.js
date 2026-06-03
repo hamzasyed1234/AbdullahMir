@@ -110,6 +110,12 @@ function DonateForm({ onClose }) {
         </div>
         <h2 className="font-serif text-[#0D4F4F] text-3xl font-bold">Support Abdullah</h2>
         <p className="font-sans text-[#0D4F4F]/60 text-sm mt-1">Your donation helps build a stronger Ward 1</p>
+        <p className="font-sans text-[#0D4F4F]/50 text-xs mt-1.5">
+          Prefer e-Transfer? Send to{' '}
+          <a href="mailto:abdullah93@gmail.com" className="text-[#0D4F4F] underline underline-offset-2 hover:text-[#1a6b6b] transition">
+            abdullah93@gmail.com
+          </a>
+        </p>
       </div>
 
       {/* Preset amounts */}
