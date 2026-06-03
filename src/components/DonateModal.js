@@ -113,7 +113,7 @@ function DonateForm({ onClose }) {
         <p className="font-sans text-[#0D4F4F]/50 text-xs mt-1.5">
           Prefer e-Transfer? Send to{' '}
           <a href="mailto:abdullah93@gmail.com" className="text-[#0D4F4F] underline underline-offset-2 hover:text-[#1a6b6b] transition">
-            abdullah93@gmail.com
+            votemirward1@gmail.com
           </a>
         </p>
       </div>
