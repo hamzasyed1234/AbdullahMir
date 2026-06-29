@@ -47,9 +47,18 @@ export default function Navbar() {
               </Link>
             ))}
 
+            <a
+              href="https://talk.abdullahmir.ca/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-[#FAF7F2]/15 text-[#FAF7F2] px-5 py-2 rounded-full font-sans font-bold text-sm hover:bg-[#FAF7F2]/25 transition shadow-sm border border-[#FAF7F2]/20 ml-2"
+            >
+              Engage
+            </a>
+
             <button
               onClick={() => setShowContact(true)}
-              className="bg-[#FAF7F2]/15 text-[#FAF7F2] px-5 py-2 rounded-full font-sans font-bold text-sm hover:bg-[#FAF7F2]/25 transition shadow-sm border border-[#FAF7F2]/20 ml-2"
+              className="bg-[#FAF7F2]/15 text-[#FAF7F2] px-5 py-2 rounded-full font-sans font-bold text-sm hover:bg-[#FAF7F2]/25 transition shadow-sm border border-[#FAF7F2]/20"
             >
               Contact
             </button>
@@ -91,6 +100,15 @@ export default function Navbar() {
                 {l.label}
               </Link>
             ))}
+
+            <a
+              href="https://talk.abdullahmir.ca/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-[#FAF7F2]/15 text-[#FAF7F2] px-5 py-2 rounded-full font-sans font-bold text-sm text-center hover:bg-[#FAF7F2]/25 transition border border-[#FAF7F2]/20"
+            >
+              Engage
+            </a>
 
             <button
               onClick={() => { setShowContact(true); setOpen(false) }}
