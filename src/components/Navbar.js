@@ -23,7 +23,7 @@ export default function Navbar() {
   return (
     <>
       <nav className={`fixed left-0 right-0 z-50 bg-[#0D4F4F] shadow-md transition-all ${user ? 'top-9' : 'top-0'}`}>
-        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between" style={{ height: '64px' }}>
+        <div className="w-full px-6 flex items-center justify-between" style={{ height: '64px' }}>
 
           {/* Logo */}
           <Link to="/" className="flex items-center flex-shrink-0">
