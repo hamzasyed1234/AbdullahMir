@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
 import EditableText from '../components/EditableText'
+import DonateModal from '../components/DonateModal'
 
 function FormattedText({ value }) {
   if (!value) return null
@@ -46,6 +47,7 @@ export default function Home() {
   const [submitted, setSubmitted] = useState(false)
   const [submitError, setSubmitError] = useState('')
   const [content, setContent] = useState({ vision_title: "Abdullah Mir's Vision", vision_body: 'Loading…' })
+  const [showDonate, setShowDonate] = useState(false)
 
   useEffect(() => {
     supabase.from('page_content').select('*').eq('page', 'home').then(({ data }) => {
@@ -99,7 +101,7 @@ export default function Home() {
             Candidate, City Councillor Ward 1 in Pickering
           </p>
           <div className="flex gap-3 flex-wrap justify-center">
-            <a href="#support" className="bg-[#0D4F4F] text-[#FAF7F2] px-6 py-3 rounded-full font-sans font-semibold text-sm hover:bg-[#1a6b6b] transition shadow-md">Show Your Support</a>
+            <button onClick={() => setShowDonate(true)} className="bg-[#0D4F4F] text-[#FAF7F2] px-6 py-3 rounded-full font-sans font-semibold text-sm hover:bg-[#1a6b6b] transition shadow-md">Donate</button>
             <a href="/meet-mir" className="border-2 border-[#0D4F4F] text-[#0D4F4F] px-6 py-3 rounded-full font-sans font-semibold text-sm hover:bg-[#0D4F4F]/10 transition">Meet Abdullah</a>
           </div>
           <SocialLinks size={28} center={true} />
@@ -117,7 +119,7 @@ export default function Home() {
           </p>
           <div className="flex flex-col gap-5">
             <div className="flex gap-3 md:gap-4 flex-wrap">
-              <a href="#support" className="bg-[#0D4F4F] text-[#FAF7F2] px-6 md:px-8 py-3 rounded-full font-sans font-semibold hover:bg-[#1a6b6b] transition shadow-lg text-sm md:text-base">Show Your Support</a>
+              <button onClick={() => setShowDonate(true)} className="bg-[#0D4F4F] text-[#FAF7F2] px-6 md:px-8 py-3 rounded-full font-sans font-semibold hover:bg-[#1a6b6b] transition shadow-lg text-sm md:text-base">Donate</button>
               <a href="/meet-mir" className="border-2 border-[#0D4F4F] text-[#0D4F4F] px-6 md:px-8 py-3 rounded-full font-sans font-semibold hover:bg-[#0D4F4F]/10 transition text-sm md:text-base">Meet Abdullah</a>
             </div>
             <div style={{ paddingLeft: '90px' }}>
@@ -195,6 +197,8 @@ export default function Home() {
           />
         </div>
       </div>
+
+      {showDonate && <DonateModal onClose={() => setShowDonate(false)} />}
 
     </div>
   )
