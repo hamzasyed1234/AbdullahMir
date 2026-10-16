@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../supabaseClient'
 import EditableText from '../components/EditableText'
 import DonateModal from '../components/DonateModal'
@@ -39,6 +39,246 @@ const SocialLinks = ({ dark = false, size = 20, center = false }) => {
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width={size} height={size}><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
       </a>
     </div>
+  )
+}
+
+// ── Pledge slideshow ──────────────────────────────────────────────
+// Files live in /public. Each slide has a .webp (fast) with the original .jpeg as fallback.
+const SLIDES = [
+  {
+    base: '/Abdullahmirhomepagepic1',
+    alt: 'Pledge to Ward 1: Making your voice heard. Monthly town halls, a response within 24 hours, and help starting community associations.',
+  },
+  {
+    base: '/Abdullahmirhomepagepic2',
+    alt: 'Pledge to Ward 1: Open roads, open doors. Get the Twyn Rivers Drive bridge repaired and opened, keep swimming and skating affordable, and attract local shops and major employers.',
+  },
+  {
+    base: '/Abdullahmirhomepagepic3',
+    alt: 'Pledge to Ward 1: Safer streets. Sidewalks on Altona Road, a mobile pothole repair team, and tailored speed control measures.',
+  },
+]
+
+const SLIDE_INTERVAL_MS = 5000
+
+// True on screens >= md (768px). Lets us render ONE layout so mobile never downloads desktop-only work.
+function useIsDesktop() {
+  const query = '(min-width: 768px)'
+  const [match, setMatch] = useState(() => typeof window !== 'undefined' && window.matchMedia(query).matches)
+  useEffect(() => {
+    const mq = window.matchMedia(query)
+    const onChange = (e) => setMatch(e.matches)
+    setMatch(mq.matches)
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
+  }, [])
+  return match
+}
+
+function SlidePicture({ slide, eager }) {
+  return (
+    <picture>
+      <source srcSet={`${slide.base}.webp`} type="image/webp" />
+      <img
+        src={`${slide.base}.jpeg`}
+        alt={slide.alt}
+        width="1080"
+        height="1350"
+        className="w-full h-full object-cover"
+        loading={eager ? 'eager' : 'lazy'}
+        decoding="async"
+        draggable="false"
+      />
+    </picture>
+  )
+}
+
+function PledgeSlideshow() {
+  const [index, setIndex] = useState(0)
+  const [paused, setPaused] = useState(false)
+  const prevIndex = useRef(0)
+  const touchStartX = useRef(null)
+  const isDesktop = useIsDesktop()
+  const count = SLIDES.length
+  const reduceMotion = typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+
+  const goTo = (i) => setIndex(((i % count) + count) % count)
+
+  // Auto-advance every few seconds. The timer restarts after any manual change,
+  // and is skipped if the visitor prefers reduced motion.
+  useEffect(() => {
+    if (paused || reduceMotion) return
+    const id = setInterval(() => setIndex(i => (i + 1) % count), SLIDE_INTERVAL_MS)
+    return () => clearInterval(id)
+  }, [paused, count, index, reduceMotion])
+
+  // Remember the last index so we can spot a slide "wrapping" from one side to the other.
+  useEffect(() => { prevIndex.current = index }, [index])
+
+  const onTouchStart = (e) => { touchStartX.current = e.touches[0].clientX }
+  const onTouchEnd = (e) => {
+    if (touchStartX.current === null) return
+    const dx = e.changedTouches[0].clientX - touchStartX.current
+    touchStartX.current = null
+    if (Math.abs(dx) > 40) goTo(index + (dx < 0 ? 1 : -1))
+  }
+  const onKeyDown = (e) => {
+    if (e.key === 'ArrowLeft') goTo(index - 1)
+    if (e.key === 'ArrowRight') goTo(index + 1)
+  }
+
+  // Position of slide i relative to the current one: -1 (left), 0 (center), 1 (right)
+  const offsetOf = (i, current) => {
+    let d = (((i - current) % count) + count) % count
+    if (d > count / 2) d -= count
+    return d
+  }
+
+  const Dots = (
+    <div className="flex justify-center gap-2">
+      {SLIDES.map((slide, i) => (
+        <button
+          key={slide.base}
+          type="button"
+          onClick={() => goTo(i)}
+          aria-label={`Go to slide ${i + 1}`}
+          aria-current={i === index}
+          className={`h-2.5 rounded-full transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0D4F4F] ${
+            i === index ? 'w-7 bg-[#0D4F4F]' : 'w-2.5 bg-[#0D4F4F]/25 hover:bg-[#0D4F4F]/50'
+          }`}
+        />
+      ))}
+    </div>
+  )
+
+  /* ───────────── DESKTOP: big center slide, blurred half-hidden slides on each side ───────────── */
+  if (isDesktop) {
+    const edgeFade = 'linear-gradient(to right, transparent 0, #000 6%, #000 94%, transparent 100%)'
+    const circleBtn =
+      'w-11 h-11 rounded-full border-2 border-[#0D4F4F]/30 text-[#0D4F4F] flex items-center justify-center hover:bg-[#0D4F4F] hover:text-[#FAF7F2] hover:border-[#0D4F4F] transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0D4F4F]'
+
+    return (
+      <section
+        className="bg-[#FAF7F2] py-16 lg:py-20"
+        aria-roledescription="carousel"
+        aria-label="Abdullah Mir's pledges to Ward 1"
+        onFocus={() => setPaused(true)}
+        onBlur={() => setPaused(false)}
+        onKeyDown={onKeyDown}
+      >
+        <div
+          className="relative w-full overflow-hidden"
+          style={{
+            '--w': 'clamp(360px, 34vw, 560px)',
+            height: 'calc(var(--w) * 1.25 + 56px)',
+            WebkitMaskImage: edgeFade,
+            maskImage: edgeFade,
+          }}
+        >
+          {SLIDES.map((slide, i) => {
+            const off = offsetOf(i, index)
+            const isCenter = off === 0
+            // A slide jumping from one side to the other should snap, not fly across the screen.
+            const wrapped = Math.abs(off - offsetOf(i, prevIndex.current)) > 1
+            return (
+              <div
+                key={slide.base}
+                role="group"
+                aria-roledescription="slide"
+                aria-label={`${i + 1} of ${count}`}
+                aria-hidden={!isCenter}
+                onClick={isCenter ? undefined : () => goTo(i)}
+                className="rounded-2xl overflow-hidden"
+                style={{
+                  position: 'absolute',
+                  top: 28,
+                  left: '50%',
+                  width: 'var(--w)',
+                  aspectRatio: '4 / 5',
+                  marginLeft: 'calc(var(--w) / -2)',
+                  // Side slides sit fully beside the main one (not behind it), with a small gap.
+                  transform: `translateX(calc(var(--w) * ${off * 0.95} + ${off * 20}px)) scale(${isCenter ? 1 : 0.82})`,
+                  zIndex: isCenter ? 20 : 10,
+                  cursor: isCenter ? 'default' : 'pointer',
+                  boxShadow: isCenter ? '0 25px 50px -12px rgba(13,79,79,0.35)' : 'none',
+                  filter: isCenter ? 'none' : 'blur(12px)',
+                  opacity: isCenter ? 1 : 0.7,
+                  transition:
+                    wrapped || reduceMotion
+                      ? 'none'
+                      : 'transform 700ms ease-in-out, box-shadow 700ms ease-in-out, filter 700ms ease-in-out, opacity 700ms ease-in-out',
+                }}
+              >
+                <SlidePicture slide={slide} eager />
+              </div>
+            )
+          })}
+        </div>
+
+        <div
+          className="flex items-center justify-center gap-6 mt-2"
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+        >
+          <button type="button" onClick={() => goTo(index - 1)} className={circleBtn} aria-label="Previous slide">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
+          </button>
+          {Dots}
+          <button type="button" onClick={() => goTo(index + 1)} className={circleBtn} aria-label="Next slide">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg>
+          </button>
+        </div>
+      </section>
+    )
+  }
+
+  /* ───────────── MOBILE: single slide, cross-fade, swipe ───────────── */
+  const arrowClass =
+    'absolute top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-[#FAF7F2]/85 text-[#0D4F4F] flex items-center justify-center shadow-md hover:bg-[#FAF7F2] transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0D4F4F]'
+
+  return (
+    <section
+      className="bg-[#FAF7F2] px-5 pb-14 pt-10"
+      aria-roledescription="carousel"
+      aria-label="Abdullah Mir's pledges to Ward 1"
+    >
+      <div
+        className="relative w-full max-w-[420px] mx-auto"
+        onFocus={() => setPaused(true)}
+        onBlur={() => setPaused(false)}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+        onKeyDown={onKeyDown}
+      >
+        <div
+          className="relative w-full overflow-hidden rounded-2xl shadow-lg bg-[#0D4F4F]/5"
+          style={{ aspectRatio: '4 / 5' }}
+        >
+          {SLIDES.map((slide, i) => (
+            <div
+              key={slide.base}
+              role="group"
+              aria-roledescription="slide"
+              aria-label={`${i + 1} of ${count}`}
+              aria-hidden={i !== index}
+              className="absolute inset-0 transition-opacity duration-700 ease-in-out motion-reduce:transition-none"
+              style={{ opacity: i === index ? 1 : 0, pointerEvents: i === index ? 'auto' : 'none' }}
+            >
+              <SlidePicture slide={slide} eager={i === 0} />
+            </div>
+          ))}
+        </div>
+
+        <button type="button" onClick={() => goTo(index - 1)} className={`${arrowClass} left-2`} aria-label="Previous slide">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
+        </button>
+        <button type="button" onClick={() => goTo(index + 1)} className={`${arrowClass} right-2`} aria-label="Next slide">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg>
+        </button>
+
+        <div className="mt-5">{Dots}</div>
+      </div>
+    </section>
   )
 }
 
@@ -153,6 +393,9 @@ export default function Home() {
           </svg>
         </div>
       </div>
+
+      {/* ── SHARED: Pledge Slideshow (under social icons, above support form) ── */}
+      <PledgeSlideshow />
 
       {/* ── SHARED: Support Form ── */}
       <div id="support" className="bg-[#0D4F4F] py-16 px-6">
